@@ -6,10 +6,21 @@ import dotenv from 'dotenv';
 
 // .envファイルを読み込み
 dotenv.config();
+
+// Schema Registryを初期化
+import { initializeSchemas } from './lib/schema-initializer.js';
 import { ConceptPlanner } from './agents/concept-planner.js';
 import { AssetSynthesizer } from './agents/asset-synthesizer.js';
 import { BudgetManager } from './lib/budget.js';
 import { ShotPlanSchema, AssetManifestSchema } from './schemas/index.js';
+import { AgentOrchestrator } from './lib/agent-orchestrator.js';
+import { ConceptPlannerAgent } from './agents/concept-planner-agent.js';
+import { AssetSynthesizerAgent } from './agents/asset-synthesizer-agent.js';
+import { DirectorAgent } from './agents/director-agent.js';
+import { ConfigurationManager } from './lib/config-manager.js';
+
+// アプリケーション起動時にスキーマを初期化
+initializeSchemas();
 
 const program = new Command();
 
@@ -100,6 +111,38 @@ program
       await showStatus();
     } catch (error) {
       console.error(chalk.red('❌ ステータス取得に失敗:'), error);
+      process.exit(1);
+    }
+  });
+
+// motiva-compose orchestrate コマンド
+program
+  .command('orchestrate')
+  .description('複数エージェントをパイプラインで実行します')
+  .option('--pipeline <agents>', '実行するエージェント（カンマ区切り）', 'concept-planner,asset-synthesizer')
+  .option('--model <model>', 'LLMモデル名', 'gpt-4o-mini')
+  .option('--output <file>', '出力ファイル', 'pipeline-result.json')
+  .action(async (options: { pipeline: string; model: string; output: string }) => {
+    try {
+      await executePipeline(options);
+    } catch (error) {
+      console.error(chalk.red('❌ パイプライン実行に失敗:'), error);
+      process.exit(1);
+    }
+  });
+
+// motiva-compose config コマンド
+program
+  .command('config')
+  .description('設定ファイルを管理します')
+  .option('--init', '設定ファイルを初期化', false)
+  .option('--show', '現在の設定を表示', false)
+  .option('--validate', '設定ファイルを検証', false)
+  .action(async (options: { init: boolean; show: boolean; validate: boolean }) => {
+    try {
+      await manageConfig(options);
+    } catch (error) {
+      console.error(chalk.red('❌ 設定管理に失敗:'), error);
       process.exit(1);
     }
   });
@@ -342,6 +385,89 @@ async function showStatus(): Promise<void> {
   const budgetManager = new BudgetManager();
   const status = await budgetManager.getUsageStatus();
   console.log(status);
+}
+
+async function executePipeline(options: { pipeline: string; model: string; output: string }): Promise<void> {
+  // 標準入力からテーマを読み込み
+  const input = await readStdin();
+  if (!input.trim()) {
+    throw new Error('テーマが指定されていません。標準入力からテーマを入力してください。');
+  }
+
+  console.log(chalk.blue('🎬 Agent Orchestrator: パイプライン実行中...'));
+  console.log(chalk.gray(`📋 パイプライン: ${options.pipeline}`));
+
+  // エージェントリストを解析
+  const agentNames = options.pipeline.split(',').map(name => name.trim());
+  
+  // Orchestratorを初期化
+  const orchestrator = new AgentOrchestrator();
+  const budgetManager = new BudgetManager();
+  const apiKey = process.env.OPENAI_API_KEY;
+
+  // パイプライン状態を管理
+  let shotPlan: any = null;
+  
+  // エージェントを追加
+  for (const agentName of agentNames) {
+    switch (agentName) {
+      case 'concept-planner':
+        orchestrator.addStep(new ConceptPlannerAgent(budgetManager, apiKey), (data: any) => {
+          shotPlan = data;
+          return data;
+        });
+        break;
+      case 'asset-synthesizer':
+        orchestrator.addStep(new AssetSynthesizerAgent(budgetManager, apiKey));
+        break;
+      case 'director':
+        orchestrator.addStep(new DirectorAgent());
+        break;
+      default:
+        throw new Error(`未対応のエージェント: ${agentName}`);
+    }
+  }
+
+  // パイプライン実行
+  const result = await orchestrator.execute(input);
+
+  // 結果を保存
+  await fs.writeFile(options.output, JSON.stringify(result, null, 2));
+  
+  console.log(chalk.green('✅ パイプライン実行完了'));
+  console.log(chalk.cyan(`📄 結果を ${options.output} に保存しました`));
+}
+
+async function manageConfig(options: { init: boolean; show: boolean; validate: boolean }): Promise<void> {
+  const configManager = ConfigurationManager.getInstance();
+
+  if (options.init) {
+    await configManager.initializeConfig();
+    return;
+  }
+
+  if (options.show) {
+    const config = await configManager.loadConfig();
+    console.log(chalk.blue('📋 現在の設定:'));
+    console.log(JSON.stringify(config, null, 2));
+    return;
+  }
+
+  if (options.validate) {
+    try {
+      await configManager.loadConfig();
+      console.log(chalk.green('✅ 設定ファイルは有効です'));
+    } catch (error) {
+      console.log(chalk.red('❌ 設定ファイルにエラーがあります:'), error);
+      process.exit(1);
+    }
+    return;
+  }
+
+  // デフォルト: 設定を表示
+  const config = await configManager.loadConfig();
+  console.log(chalk.blue('📋 現在の設定:'));
+  console.log(JSON.stringify(config, null, 2));
 }
 
 async function readStdin(): Promise<string> {

@@ -1,6 +1,8 @@
 import OpenAI from 'openai';
 import { z } from 'zod';
 import chalk from 'chalk';
+import { SchemaRegistry } from './schema-registry.js';
+import { withRetryForErrorTypes } from './retry.js';
 
 export interface LLMRequest {
   model: string;
@@ -324,38 +326,58 @@ export class OpenAIWrapper {
   ): Promise<LLMResponse<T>> {
     const { model, systemPrompt, userInput, temperature = 0.7, maxTokens = 4096 } = request;
 
-    // Use predefined JSON schema for known schemas
-    let jsonSchema;
-    if (schemaName === 'shot_plan_schema') {
-      jsonSchema = SHOT_PLAN_JSON_SCHEMA;
-    } else if (schemaName === 'asset_manifest_schema') {
-      jsonSchema = ASSET_MANIFEST_JSON_SCHEMA;
+    // Schema RegistryからJSON Schemaを取得
+    const registry = SchemaRegistry.getInstance();
+    let jsonSchema: Record<string, unknown>;
+
+    if (registry.has(schemaName)) {
+      // 登録済みスキーマを使用
+      jsonSchema = registry.get(schemaName).jsonSchema as Record<string, unknown>;
+      console.log(chalk.gray(`🔍 登録済みスキーマを使用: ${schemaName}`));
     } else {
-      throw new Error(`未対応のスキーマ: ${schemaName}. 手動でJSON Schemaを定義してください。`);
+      // 動的にJSON Schemaを生成
+      jsonSchema = registry.generateJSONSchema(schema, {
+        name: schemaName,
+        description: `Generated schema for ${schemaName}`
+      }) as Record<string, unknown>;
+      console.log(chalk.gray(`🔧 動的スキーマ生成: ${schemaName}`));
     }
+
+    // デバッグ: 生成されたJSON Schemaを表示
+    console.log(chalk.gray('📋 生成されたJSON Schema:'), JSON.stringify(jsonSchema, null, 2));
 
     console.log(chalk.green('✅ Structured Outputsを使用'));
     console.log(chalk.gray(`📋 スキーマ: ${schemaName}`));
 
-    const response = await this.client.chat.completions.create({
-      model,
-      messages: [
-        { role: 'system', content: systemPrompt },
-        { role: 'user', content: userInput }
-      ],
-      temperature,
-      max_tokens: maxTokens,
-      response_format: {
-        type: 'json_schema',
-        json_schema: {
-          name: schemaName,
-          strict: true,
-          schema: jsonSchema
+    return await withRetryForErrorTypes(
+      async () => {
+        const response = await this.client.chat.completions.create({
+          model,
+          messages: [
+            { role: 'system', content: systemPrompt },
+            { role: 'user', content: userInput }
+          ],
+          temperature,
+          max_tokens: maxTokens,
+          response_format: {
+            type: 'json_schema',
+            json_schema: {
+              name: schemaName,
+              strict: true,
+              schema: jsonSchema
+            }
+          }
+        });
+
+        return this.parseAndValidate(response, schema);
+      },
+      ['rate_limit', 'timeout', 'network', 'openai_api'],
+      {
+        onRetry: (attempt, error, delayMs) => {
+          console.log(chalk.yellow(`🔄 OpenAI API リトライ ${attempt}: ${error.type}`));
         }
       }
-    });
-
-    return this.parseAndValidate(response, schema);
+    );
   }
 
   private async useFallbackJSONMode<T>(
@@ -366,18 +388,28 @@ export class OpenAIWrapper {
 
     console.log(chalk.yellow('⚠️  JSON mode（非strict）を使用'));
 
-    const response = await this.client.chat.completions.create({
-      model,
-      messages: [
-        { role: 'system', content: systemPrompt },
-        { role: 'user', content: userInput }
-      ],
-      temperature,
-      max_tokens: maxTokens,
-      response_format: { type: 'json_object' }
-    });
+    return await withRetryForErrorTypes(
+      async () => {
+        const response = await this.client.chat.completions.create({
+          model,
+          messages: [
+            { role: 'system', content: systemPrompt },
+            { role: 'user', content: userInput }
+          ],
+          temperature,
+          max_tokens: maxTokens,
+          response_format: { type: 'json_object' }
+        });
 
-    return this.parseAndValidate(response, schema);
+        return this.parseAndValidate(response, schema);
+      },
+      ['rate_limit', 'timeout', 'network', 'openai_api'],
+      {
+        onRetry: (attempt, error, delayMs) => {
+          console.log(chalk.yellow(`🔄 OpenAI API リトライ ${attempt}: ${error.type}`));
+        }
+      }
+    );
   }
 
   private parseAndValidate<T>(

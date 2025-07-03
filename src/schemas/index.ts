@@ -47,15 +47,21 @@ export const AssetItemSchema = z.object({
   }).optional()
 });
 
+// ジェネレーター設定のスキーマ
+export const GeneratorConfigSchema = z.object({
+  name: z.string(),
+  type: z.enum(['local', 'api', 'mock']),
+  config: z.record(z.string(), z.unknown()).nullable().optional()
+});
+
+// ジェネレーター設定のレコードスキーマ
+export const GeneratorsRecordSchema = z.record(z.string(), GeneratorConfigSchema);
+
 export const AssetManifestSchema = z.object({
   sceneId: z.string().min(1),
   version: z.string(),
   assets: z.array(AssetItemSchema).min(1),
-  generators: z.record(z.string(), z.object({
-    name: z.string(),
-    type: z.enum(['local', 'api', 'mock']),
-    config: z.record(z.string(), z.any()).nullable().optional()
-  })).nullable().optional(),
+  generators: GeneratorsRecordSchema.nullable().optional(),
   totalEstimatedCost: z.number().min(0).nullable().optional()
 });
 
