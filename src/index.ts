@@ -7,8 +7,9 @@ import dotenv from 'dotenv';
 // .envファイルを読み込み
 dotenv.config();
 import { ConceptPlanner } from './agents/concept-planner.js';
+import { AssetSynthesizer } from './agents/asset-synthesizer.js';
 import { BudgetManager } from './lib/budget.js';
-import { ShotPlanSchema } from './schemas/index.js';
+import { ShotPlanSchema, AssetManifestSchema } from './schemas/index.js';
 
 const program = new Command();
 
@@ -59,6 +60,33 @@ program
       await validateFile(file, options.schema);
     } catch (error) {
       console.error(chalk.red('❌ 検証に失敗:'), error);
+      process.exit(1);
+    }
+  });
+
+// motiva-compose synth コマンド
+program
+  .command('synth')
+  .description('Asset Synthesizerを使用してAsset Manifestを生成し、素材を合成します')
+  .argument('<shot-plan>', 'ショットプランJSONファイル')
+  .option('--model <model>', 'LLMモデル名', 'gpt-4o-mini')
+  .option('--temperature <temp>', '生成温度', '0.5')
+  .option('--quality <quality>', '素材品質', 'standard')
+  .option('--output <file>', 'Asset Manifest出力ファイル', 'manifest.json')
+  .option('--assets-dir <dir>', '素材出力ディレクトリ', './assets')
+  .option('--generate', '実際に素材を生成する', false)
+  .action(async (shotPlanFile: string, options: { 
+    model: string; 
+    temperature: string; 
+    quality: string; 
+    output: string; 
+    assetsDir: string;
+    generate: boolean;
+  }) => {
+    try {
+      await synthesizeAssets(shotPlanFile, options);
+    } catch (error) {
+      console.error(chalk.red('❌ Asset 生成に失敗:'), error);
       process.exit(1);
     }
   });
@@ -229,9 +257,84 @@ async function validateFile(filePath: string, schemaType: string): Promise<void>
 
       console.log(chalk.green('✅ 検証成功'));
       break;
+
+    case 'asset-manifest':
+      const validatedManifest = AssetManifestSchema.parse(data);
+      
+      // 追加的な業務ロジック検証
+      const budgetManagerAsset = new BudgetManager();
+      const synthesizer = new AssetSynthesizer(budgetManagerAsset);
+      const manifestValidation = await synthesizer.validateManifest(validatedManifest);
+
+      if (manifestValidation.warnings.length > 0) {
+        console.log(chalk.yellow('⚠️  警告:'));
+        manifestValidation.warnings.forEach(warning => console.log(chalk.yellow(`  - ${warning}`)));
+      }
+
+      if (!manifestValidation.isValid) {
+        console.log(chalk.red('❌ エラー:'));
+        manifestValidation.errors.forEach(error => console.log(chalk.red(`  - ${error}`)));
+        process.exit(1);
+      }
+
+      console.log(chalk.green('✅ 検証成功'));
+      break;
     
     default:
       throw new Error(`未対応のスキーマタイプ: ${schemaType}`);
+  }
+}
+
+async function synthesizeAssets(shotPlanFile: string, options: any): Promise<void> {
+  // ショットプランを読み込み
+  const planContent = await fs.readFile(shotPlanFile, 'utf8');
+  const shotPlan = ShotPlanSchema.parse(JSON.parse(planContent));
+
+  console.log(chalk.blue(`📋 ショットプランを読み込み: ${shotPlanFile}`));
+
+  const budgetManager = new BudgetManager();
+  const synthesizer = new AssetSynthesizer(budgetManager);
+
+  const config = {
+    model: options.model,
+    temperature: parseFloat(options.temperature),
+    maxTokens: 6144,
+    quality: options.quality as 'draft' | 'standard' | 'high',
+    outputDir: options.assetsDir
+  };
+
+  // Asset Manifest を生成
+  console.log(chalk.blue('🎨 Asset Manifest 生成中...'));
+  let manifest = await synthesizer.generateManifest(shotPlan, config);
+
+  // 検証実行
+  const validation = await synthesizer.validateManifest(manifest);
+  
+  if (validation.warnings.length > 0) {
+    console.log(chalk.yellow('⚠️  警告:'));
+    validation.warnings.forEach(warning => console.log(chalk.yellow(`  - ${warning}`)));
+  }
+
+  if (!validation.isValid) {
+    console.log(chalk.red('❌ エラー:'));
+    validation.errors.forEach(error => console.log(chalk.red(`  - ${error}`)));
+    throw new Error('生成されたAsset Manifestに致命的なエラーがあります');
+  }
+
+  // 素材の実際の生成（オプション）
+  if (options.generate) {
+    console.log(chalk.blue('🔧 素材生成を開始...'));
+    manifest = await synthesizer.synthesizeAssets(manifest, options.assetsDir);
+  }
+
+  // Asset Manifest をファイルに出力
+  await fs.writeFile(options.output, JSON.stringify(manifest, null, 2));
+  console.log(chalk.green(`✅ Asset Manifest を ${options.output} に保存しました`));
+  
+  if (options.generate) {
+    console.log(chalk.green(`📁 素材を ${options.assetsDir} に生成しました`));
+  } else {
+    console.log(chalk.cyan('💡 実際の素材生成を行うには --generate フラグを使用してください'));
   }
 }
 

@@ -86,6 +86,193 @@ const SHOT_PLAN_JSON_SCHEMA = {
   additionalProperties: false
 };
 
+// JSON Schema for AssetManifest - manually defined for Structured Outputs
+const ASSET_MANIFEST_JSON_SCHEMA = {
+  type: "object",
+  properties: {
+    sceneId: {
+      type: "string",
+      description: "Scene identifier matching the shot plan"
+    },
+    version: {
+      type: "string",
+      description: "Manifest version (e.g., '1.0')"
+    },
+    assets: {
+      type: "array",
+      items: {
+        type: "object",
+        properties: {
+          id: {
+            type: "string",
+            description: "Unique asset identifier"
+          },
+          type: {
+            type: "string",
+            enum: ["video", "audio", "image", "effect"],
+            description: "Type of asset"
+          },
+          uri: {
+            anyOf: [
+              { type: "string" },
+              { type: "null" }
+            ],
+            description: "File path or URL (optional)"
+          },
+          generator: {
+            type: "string",
+            description: "Generator used to create this asset"
+          },
+          spec: {
+            type: "object",
+            properties: {
+              description: {
+                type: "string",
+                description: "Detailed description of the asset"
+              },
+              duration: {
+                anyOf: [
+                  { type: "number" },
+                  { type: "null" }
+                ],
+                description: "Duration in seconds (for video/audio)"
+              },
+              dimensions: {
+                anyOf: [
+                  {
+                    type: "object",
+                    properties: {
+                      width: { type: "number" },
+                      height: { type: "number" }
+                    },
+                    required: ["width", "height"],
+                    additionalProperties: false
+                  },
+                  { type: "null" }
+                ],
+                description: "Dimensions for video/image assets"
+              },
+              format: {
+                anyOf: [
+                  { type: "string" },
+                  { type: "null" }
+                ],
+                description: "File format (mp4, jpg, wav, etc.)"
+              },
+              style: {
+                anyOf: [
+                  { type: "string" },
+                  { type: "null" }
+                ],
+                description: "Style or genre specification"
+              },
+              quality: {
+                anyOf: [
+                  {
+                    type: "string",
+                    enum: ["draft", "standard", "high"]
+                  },
+                  { type: "null" }
+                ],
+                description: "Quality level"
+              }
+            },
+                          required: ["description", "duration", "dimensions", "format", "style", "quality"],
+              additionalProperties: false
+          },
+          status: {
+            type: "string",
+            enum: ["pending", "generated", "failed"],
+            description: "Current status of the asset"
+          },
+          metadata: {
+            anyOf: [
+              {
+                type: "object",
+                properties: {
+                  shotId: {
+                    anyOf: [
+                      { type: "string" },
+                      { type: "null" }
+                    ],
+                    description: "Related shot identifier"
+                  },
+                  createdAt: {
+                    anyOf: [
+                      { type: "string" },
+                      { type: "null" }
+                    ],
+                    description: "Creation timestamp"
+                  },
+                  estimatedCost: {
+                    anyOf: [
+                      { type: "number" },
+                      { type: "null" }
+                    ],
+                    description: "Estimated cost in USD"
+                  },
+                  actualCost: {
+                    anyOf: [
+                      { type: "number" },
+                      { type: "null" }
+                    ],
+                    description: "Actual cost in USD"
+                  }
+                },
+                required: ["shotId", "createdAt", "estimatedCost", "actualCost"],
+                additionalProperties: false
+              },
+              { type: "null" }
+            ],
+            description: "Additional metadata"
+          }
+        },
+        required: ["id", "type", "uri", "generator", "spec", "status", "metadata"],
+        additionalProperties: false
+      }
+    },
+    generators: {
+      anyOf: [
+        {
+          type: "object",
+                    patternProperties: {
+            ".*": {
+              type: "object",
+              properties: {
+                name: { type: "string" },
+                type: {
+                  type: "string",
+                  enum: ["local", "api", "mock"]
+                },
+                config: {
+                  anyOf: [
+                    { type: "object" },
+                    { type: "null" }
+                  ]
+                }
+              },
+              required: ["name", "type", "config"],
+              additionalProperties: false
+            }
+          },
+          additionalProperties: false
+        },
+        { type: "null" }
+      ],
+      description: "Available generators configuration"
+    },
+    totalEstimatedCost: {
+      anyOf: [
+        { type: "number" },
+        { type: "null" }
+      ],
+      description: "Total estimated cost for all assets"
+    }
+  },
+  required: ["sceneId", "version", "assets", "generators", "totalEstimatedCost"],
+  additionalProperties: false
+};
+
 export class OpenAIWrapper {
   private client: OpenAI;
 
@@ -141,6 +328,8 @@ export class OpenAIWrapper {
     let jsonSchema;
     if (schemaName === 'shot_plan_schema') {
       jsonSchema = SHOT_PLAN_JSON_SCHEMA;
+    } else if (schemaName === 'asset_manifest_schema') {
+      jsonSchema = ASSET_MANIFEST_JSON_SCHEMA;
     } else {
       throw new Error(`未対応のスキーマ: ${schemaName}. 手動でJSON Schemaを定義してください。`);
     }

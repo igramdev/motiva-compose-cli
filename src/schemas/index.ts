@@ -20,6 +20,45 @@ export const ShotPlanSchema = z.object({
   }).optional()
 });
 
+// === Asset Management ===
+
+export const AssetItemSchema = z.object({
+  id: z.string().min(1),
+  type: z.enum(['video', 'audio', 'image', 'effect']),
+  uri: z.string().nullable().optional(), // 生成後のファイルパス/URL
+  generator: z.string(), // 生成に使用したジェネレータ名
+  spec: z.object({
+    description: z.string(),
+    duration: z.number().int().positive().nullable().optional(), // 映像・音声の場合
+    dimensions: z.object({
+      width: z.number().int().positive(),
+      height: z.number().int().positive()
+    }).nullable().optional(), // 画像・映像の場合
+    format: z.string().nullable().optional(), // mp4, jpg, wav, etc
+    style: z.string().nullable().optional(), // 生成スタイル指定
+    quality: z.enum(['draft', 'standard', 'high']).nullable().optional()
+  }),
+  status: z.enum(['pending', 'generated', 'failed']),
+  metadata: z.object({
+    shotId: z.string().nullable().optional(), // 関連するショットID
+    createdAt: z.string().datetime().nullable().optional(),
+    estimatedCost: z.number().min(0).nullable().optional(),
+    actualCost: z.number().min(0).nullable().optional()
+  }).optional()
+});
+
+export const AssetManifestSchema = z.object({
+  sceneId: z.string().min(1),
+  version: z.string(),
+  assets: z.array(AssetItemSchema).min(1),
+  generators: z.record(z.string(), z.object({
+    name: z.string(),
+    type: z.enum(['local', 'api', 'mock']),
+    config: z.record(z.string(), z.any()).nullable().optional()
+  })).nullable().optional(),
+  totalEstimatedCost: z.number().min(0).nullable().optional()
+});
+
 // === Budget Management ===
 
 export const BudgetTierSchema = z.object({
@@ -74,6 +113,8 @@ export const MotivaConfigSchema = z.object({
 
 export type Shot = z.infer<typeof ShotSchema>;
 export type ShotPlan = z.infer<typeof ShotPlanSchema>;
+export type AssetItem = z.infer<typeof AssetItemSchema>;
+export type AssetManifest = z.infer<typeof AssetManifestSchema>;
 export type BudgetTier = z.infer<typeof BudgetTierSchema>;
 export type BudgetUsage = z.infer<typeof BudgetUsageSchema>;
 export type BudgetAlerts = z.infer<typeof BudgetAlertsSchema>;

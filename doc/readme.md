@@ -522,4 +522,283 @@ export class AssetSynthesizer extends BaseAgent {
 
 ---
 
-*End of draft — open an issue or comment in Cursor to propose edits.*
+## 16 Phase 2 実装課題と Phase 3 改善案 (2025-07-03 更新)
+
+### 16.1 Phase 2 で発生した主要課題
+
+#### 🔧 **技術的課題**
+
+**1. OpenAI Structured Outputs の厳密性**
+```typescript
+// 問題: JSON Schema の required フィールド管理が複雑
+const ASSET_MANIFEST_JSON_SCHEMA = {
+  // すべてのフィールドを required に含める必要
+  required: ["sceneId", "version", "assets", "generators", "totalEstimatedCost"]
+};
+
+// 解決: スキーマ管理の抽象化が必要
+```
+
+**2. Nullable Fields の型安全性**
+```typescript
+// 問題: LLM が null を返すが Zod スキーマが厳密すぎる
+export const AssetItemSchema = z.object({
+  uri: z.string().nullable().optional(), // 複雑な型定義
+  metadata: z.object({
+    shotId: z.string().nullable().optional(),
+    // ...
+  }).optional()
+});
+
+// 解決: より柔軟な型システムが必要
+```
+
+**3. エラーハンドリングの粒度**
+```typescript
+// 問題: 部分成功時の処理が不十分
+for (const asset of manifest.assets) {
+  try {
+    updatedAsset = await this.generateMockAsset(asset, outputDir);
+  } catch (error) {
+    // 単純に failed にするだけ
+    updatedAssets.push({ ...asset, status: 'failed' });
+  }
+}
+
+// 解決: より詳細なエラー分類とリトライ機能
+```
+
+#### 🎯 **アーキテクチャ課題**
+
+**4. エージェント間の連携不足**
+- **現状**: 各エージェントが独立して動作
+- **問題**: エージェント間のデータ受け渡しが手動
+- **影響**: Phase 3 の Multi-Agent Orchestration に支障
+
+**5. スキーマ管理の分散**
+- **現状**: JSON Schema が `openai.ts` にハードコード
+- **問題**: 新スキーマ追加時の変更箇所が多い
+- **影響**: 保守性と拡張性の低下
+
+**6. 設定管理の不統一**
+- **現状**: 各エージェントが独自の設定を持つ
+- **問題**: 設定の一元管理が困難
+- **影響**: デバッグと運用の複雑化
+
+### 16.2 Phase 3 改善案
+
+#### 🏗️ **アーキテクチャ改善**
+
+**1. Schema Registry パターン**
+```typescript
+// 提案: スキーマ管理の一元化
+export class SchemaRegistry {
+  private static schemas = new Map<string, object>();
+  
+  static register(name: string, schema: object): void {
+    this.schemas.set(name, schema);
+  }
+  
+  static get(name: string): object {
+    const schema = this.schemas.get(name);
+    if (!schema) {
+      throw new Error(`Schema not found: ${name}`);
+    }
+    return schema;
+  }
+}
+
+// 使用例
+SchemaRegistry.register('asset_manifest_schema', ASSET_MANIFEST_JSON_SCHEMA);
+```
+
+**2. Agent Orchestrator**
+```typescript
+// 提案: エージェント間連携の管理
+export class AgentOrchestrator {
+  private agents: Map<string, BaseAgent> = new Map();
+  private pipeline: PipelineStep[] = [];
+  
+  async executePipeline(input: any): Promise<any> {
+    let result = input;
+    for (const step of this.pipeline) {
+      result = await step.execute(result);
+    }
+    return result;
+  }
+}
+
+// 使用例
+const orchestrator = new AgentOrchestrator();
+orchestrator.addStep('concept-planner', new ConceptPlanner());
+orchestrator.addStep('asset-synthesizer', new AssetSynthesizer());
+orchestrator.addStep('director', new Director());
+```
+
+**3. Configuration Manager**
+```typescript
+// 提案: 設定の一元管理
+export class ConfigurationManager {
+  private config: MotivaConfig;
+  private overrides: Map<string, any> = new Map();
+  
+  getAgentConfig(agentName: string): AgentConfig {
+    return {
+      ...this.config.models[agentName],
+      ...this.overrides.get(agentName)
+    };
+  }
+  
+  setOverride(agentName: string, key: string, value: any): void {
+    const current = this.overrides.get(agentName) || {};
+    this.overrides.set(agentName, { ...current, [key]: value });
+  }
+}
+```
+
+#### 🔄 **エラーハンドリング改善**
+
+**4. Retry Mechanism**
+```typescript
+// 提案: 自動リトライ機能
+export class RetryManager {
+  static async withRetry<T>(
+    operation: () => Promise<T>,
+    maxRetries: number = 3,
+    backoffMs: number = 1000
+  ): Promise<T> {
+    let lastError: Error;
+    
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      try {
+        return await operation();
+      } catch (error) {
+        lastError = error as Error;
+        if (attempt === maxRetries) break;
+        
+        await this.delay(backoffMs * Math.pow(2, attempt - 1));
+      }
+    }
+    
+    throw lastError!;
+  }
+}
+```
+
+**5. Error Classification**
+```typescript
+// 提案: エラーの分類と適切な処理
+export enum ErrorType {
+  VALIDATION_ERROR = 'validation_error',
+  API_ERROR = 'api_error',
+  BUDGET_ERROR = 'budget_error',
+  NETWORK_ERROR = 'network_error',
+  UNKNOWN_ERROR = 'unknown_error'
+}
+
+export class ErrorHandler {
+  static classifyError(error: any): ErrorType {
+    if (error.code === 400) return ErrorType.VALIDATION_ERROR;
+    if (error.code === 429) return ErrorType.API_ERROR;
+    if (error.message.includes('予算制限')) return ErrorType.BUDGET_ERROR;
+    return ErrorType.UNKNOWN_ERROR;
+  }
+  
+  static handleError(error: any, context: string): void {
+    const errorType = this.classifyError(error);
+    // エラータイプに応じた適切な処理
+  }
+}
+```
+
+#### 📊 **監視・ログ改善**
+
+**6. Telemetry System**
+```typescript
+// 提案: 詳細な監視システム
+export class TelemetryManager {
+  private metrics: Map<string, number> = new Map();
+  private events: TelemetryEvent[] = [];
+  
+  recordMetric(name: string, value: number): void {
+    this.metrics.set(name, value);
+  }
+  
+  recordEvent(event: TelemetryEvent): void {
+    this.events.push(event);
+  }
+  
+  generateReport(): TelemetryReport {
+    return {
+      metrics: Object.fromEntries(this.metrics),
+      events: this.events,
+      summary: this.generateSummary()
+    };
+  }
+}
+```
+
+**7. Structured Logging**
+```typescript
+// 提案: 構造化ログ
+export class Logger {
+  static info(message: string, context: LogContext = {}): void {
+    console.log(JSON.stringify({
+      level: 'info',
+      timestamp: new Date().toISOString(),
+      message,
+      ...context
+    }));
+  }
+  
+  static error(message: string, error: Error, context: LogContext = {}): void {
+    console.error(JSON.stringify({
+      level: 'error',
+      timestamp: new Date().toISOString(),
+      message,
+      error: {
+        name: error.name,
+        message: error.message,
+        stack: error.stack
+      },
+      ...context
+    }));
+  }
+}
+```
+
+### 16.3 Phase 3 実装優先度
+
+#### **Week 1: 基盤改善**
+1. **Schema Registry** 実装
+2. **Configuration Manager** 実装
+3. **Error Classification** システム
+
+#### **Week 2: エージェント統合**
+4. **Agent Orchestrator** 実装
+5. **Retry Mechanism** 実装
+6. **Director Agent** 基本実装
+
+#### **Week 3: 監視・品質向上**
+7. **Telemetry System** 実装
+8. **Structured Logging** 実装
+9. **Editor Agent** 基本実装
+
+#### **Week 4: 統合・テスト**
+10. **Multi-Agent Pipeline** 統合
+11. **JSON Patch システム** 実装
+12. **E2E テスト** 拡張
+
+### 16.4 期待される効果
+
+| 改善項目 | 現状 | 改善後 | 効果 |
+|----------|------|--------|------|
+| **スキーマ管理** | 分散・ハードコード | 一元化・動的 | 保守性向上 |
+| **エージェント連携** | 手動・独立 | 自動・統合 | 開発効率向上 |
+| **エラーハンドリング** | 単純・失敗時停止 | 分類・リトライ | 安定性向上 |
+| **監視・ログ** | 基本・非構造化 | 詳細・構造化 | 運用性向上 |
+| **設定管理** | 分散・重複 | 一元・動的 | デバッグ効率向上 |
+
+---
+
+*End of Phase 2 課題分析 — Phase 3 実装準備完了*
