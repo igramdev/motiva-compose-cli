@@ -382,7 +382,7 @@ export class OpenAIWrapper {
 
         return this.parseAndValidate(response, schema);
       },
-      ['rate_limit', 'timeout', 'network', 'openai_api'],
+      [ErrorType.API_LIMIT, ErrorType.TIMEOUT, ErrorType.NETWORK, ErrorType.UNKNOWN],
       {
         onRetry: (attempt, error, delayMs) => {
           console.log(chalk.yellow(`🔄 OpenAI API リトライ ${attempt}: ${error.type}`));
@@ -414,7 +414,7 @@ export class OpenAIWrapper {
 
         return this.parseAndValidate(response, schema);
       },
-      ['rate_limit', 'timeout', 'network', 'openai_api'],
+      [ErrorType.API_LIMIT, ErrorType.TIMEOUT, ErrorType.NETWORK, ErrorType.UNKNOWN],
       {
         onRetry: (attempt, error, delayMs) => {
           console.log(chalk.yellow(`🔄 OpenAI API リトライ ${attempt}: ${error.type}`));

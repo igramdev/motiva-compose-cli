@@ -358,26 +358,26 @@ export const SceneGraphSchema = z.object({
 
 ---
 
-## 12 Roadmap & Agreement Snapshot (2025-07-03 合意)
+## 12  Roadmap & Agreement Snapshot  (2025‑07‑03 改訂)
 
-| Phase | ゴール / 含む CLI コマンド | ステータス |
-|-------|---------------------------|------------|
-| **1 (MVP)** | **Core CLI** &nbsp;`init` / `plan` / `validate` / **budget 管理**<br> • Concept Planner LLM 呼び出し<br> • Zod 基本スキーマ検証<br> • ShotPlan 致命的エラーチェックのみ<br> • stdin パイプ UI | ✅ 完成 |
-| **2** | `synth` で Asset Synthesizer 追加<br>ローカルファイル管理・予算アラート強化 | ✅ 完成 |
-| **3** | `compose` / `explain` — Multi-Agent Orchestration<br>JSON Patch 適用・自然言語 Diff | ✅ 完成 |
-| **4** | `render` — Remotion 統合 & HLS プレビュー<br>ffmpeg or Remotion Lambda 連携 | 🔄 後日実装予定 |
-| **5** | `orchestrate` — マルチエージェントパイプライン<br>ConceptPlanner → AssetSynthesizer → Director | ✅ 完成 |
-| **6** | Schema Registry & Configuration Manager<br>エラーハンドリング・リトライ機構 | ✅ 完成 |
-| **7** | 動画生成エンジン統合<br>Remotion レンダリング・プレビュー | 🔄 後日実装予定 |
-| **8** | 高度機能・プロダクション化<br>拡張機能・パフォーマンス最適化 | 📋 実装予定 |
+| Phase | 主要ゴール / 含む CLI コマンド (抜粋) | ステータス |
+|-------|--------------------------------------|------------|
+| **1   Core CLI** | `init` `plan` `validate` `budget`<br>Concept‑Planner LLM / Zod 基本スキーマ / stdin パイプ入出力 | ✅ 完了 |
+| **2   Event Orchestrator** | **`orchestrate`** — EventBus(NATS/Redis) + LLM Provider 抽象化<br>フォールバック / 二軸コスト計測 | 🔄 設計中 |
+| **3   Light Render** | **`preview`** — Remotion Player GIF/HLS で即時プレビュー | 🟡 予定 |
+| **4   CRDT Compose** | **`compose` `explain`** — Yjs/Automerge Scene Store + Multi‑Agent Patch | 🟡 予定 |
+| **5   Schema Registry / Adv Errors** | 統合スキーマレジストリ + Retry / ErrorClassifier + Budget(時間×トークン) | 🟡 予定 |
+| **6   Full Render & Plugin** | **`render`** — Remotion Lambda / ffmpeg + Plugin Sandbox, Telemetry, API Server | 📋 バックログ |
 
-### 実装方針の変更 (2025-07-03 更新)
+### ✨ 今後追加する AI‑ドリブン改善ポイント
 
-**動画生成エンジン統合の延期**
-- **Phase 7** (Remotion統合) は後日実装予定
-- **理由**: ローカルコンピュータでのテストに時間がかかるため
-- **代替**: Phase 8 (高度機能・プロダクション化) を優先実装
-- **影響**: 現在の3段階パイプラインは完全動作、JSON出力で十分な検証が可能
+1. **イベント駆動 Orchestrator** — 各 LLM を Pub/Sub で疎結合化し、並列処理と再試行をミドルウェアに委譲  
+2. **LLM Provider 抽象レイヤ** — OpenAI / Anthropic / Self‑hosted Mistral を同一インターフェースで差し替え  
+3. **CRDT Scene Store** — Yjs で同時編集を安全にマージし、Critic は QA に専念  
+4. **二軸コスト管理** — トークン & 壁時計秒を両方制限して並列パイプラインでも予算逸脱を防止  
+5. **ライトレンダ (Phase 3 前倒し)** — Remotion Player で GIF/HLS を生成し「すぐ動く」体験を提供  
+6. **Plugin Sandbox / Capability Manifest** — wasm/vm2 で権限最小化した拡張エージェントをロード  
+7. **早期テレメトリ** — OpenTelemetry JS で初期段階から可観測性を確保し MTTR を短縮
 
 ### 合意済み実装ポイント
 
@@ -974,3 +974,8 @@ export class APIServer {
 ---
 
 *Phase 8 実装計画完了 — 動画生成エンジン統合は後日実装予定*
+
+### 新アーキテクチャのポイント
+- イベント駆動Orchestrator（EventBus + EventDrivenOrchestrator）
+- LLM Provider抽象化レイヤ（llm-provider.ts）
+- 二軸コスト管理（dual-budget-manager.ts）

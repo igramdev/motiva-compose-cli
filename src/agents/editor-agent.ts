@@ -1,36 +1,40 @@
 import { z } from 'zod';
-import { BaseAgent } from '../lib/agent-orchestrator.js';
-import { BudgetManager } from '../lib/budget.js';
+import * as fs from 'fs/promises';
+import * as path from 'path';
 import { SceneGraph, SceneGraphSchema, JsonPatch, JsonPatchSchema } from '../schemas/index.js';
-import { ConfigurationManager, AgentConfig } from '../lib/config-manager.js';
-import { OpenAIWrapper, LLMRequest } from '../lib/openai.js';
+import { ConfigurationManager } from '../lib/config-manager.js';
+import { llmProviderManager, LLMRequest, LLMResponse } from '../lib/llm-provider.js';
+import { DualBudgetManager, CostEstimate } from '../lib/dual-budget-manager.js';
 import chalk from 'chalk';
 
 /**
  * Editor Agent: 映像編集・品質向上を担当
  */
-export class EditorAgent extends BaseAgent<SceneGraph, JsonPatch> {
+export class EditorAgent {
   name = 'editor';
   inputSchema = SceneGraphSchema;
   outputSchema = JsonPatchSchema;
 
-  private openai: OpenAIWrapper;
-  private budgetManager: BudgetManager;
+  private budgetManager: DualBudgetManager;
   private configManager: ConfigurationManager;
+  private systemPrompt: string | null = null;
 
-  constructor(budgetManager: BudgetManager, apiKey?: string) {
-    super();
-    this.openai = new OpenAIWrapper(apiKey);
-    this.budgetManager = budgetManager;
+  constructor(budgetManager?: DualBudgetManager) {
+    this.budgetManager = budgetManager || new DualBudgetManager();
     this.configManager = ConfigurationManager.getInstance();
   }
 
-  async run(sceneGraph: SceneGraph): Promise<JsonPatch> {
-    console.log(chalk.blue('🎬 Editor Agent: 映像編集・品質向上中...'));
+  private async loadSystemPrompt(): Promise<string> {
+    if (this.systemPrompt) return this.systemPrompt;
 
-    const config = await this.configManager.getAgentConfig('editor');
-    
-    const systemPrompt = `あなたは経験豊富な映像エディタです。
+    try {
+      const promptPath = path.join(process.cwd(), 'prompts', 'editor', 'v1_system.txt');
+      this.systemPrompt = await fs.readFile(promptPath, 'utf8');
+      return this.systemPrompt;
+    } catch (error) {
+      // フォールバック用の最小限のプロンプト
+      this.systemPrompt = `
+あなたは経験豊富な映像エディタです。
 SceneGraphを分析し、品質向上のための編集提案をJSON Patch形式で出力してください。
 
 編集の重点項目：
@@ -56,7 +60,17 @@ SceneGraphを分析し、品質向上のための編集提案をJSON Patch形式
     "value": { "type": "effect", "name": "blur" }
   }
 ]
-`;
+      `.trim();
+      return this.systemPrompt;
+    }
+  }
+
+  async run(sceneGraph: SceneGraph): Promise<JsonPatch> {
+    console.log(chalk.blue('🎬 Editor Agent: 映像編集・品質向上中...'));
+
+    const config = await this.configManager.getAgentConfig('editor');
+    
+    const systemPrompt = await this.loadSystemPrompt();
 
     const userInput = `以下のSceneGraphを分析し、品質向上のための編集提案をJSON Patch形式の**配列**で出力してください：
 
@@ -80,19 +94,26 @@ ${JSON.stringify(sceneGraph, null, 2)}
     const estimatedTokens = Math.ceil((systemPrompt.length + userInput.length) / 3);
     const estimatedCost = estimatedTokens * 0.00015 / 1000;
     
-    const canProceed = await this.budgetManager.checkBudgetLimit(estimatedTokens, estimatedCost);
+    const costEstimate: CostEstimate = {
+      tokens: estimatedTokens,
+      estimatedCost: estimatedCost,
+      estimatedWallTime: 30 // 推定30秒
+    };
+    
+    const canProceed = await this.budgetManager.checkBudgetLimit(costEstimate);
     if (!canProceed) {
       throw new Error('予算制限により編集処理を中断しました');
     }
 
     try {
-      const response = await this.openai.generateJSON(
-        request,
-        JsonPatchSchema,
-        'json_patch_schema'
-      );
+      const provider = llmProviderManager.getProviderForModel(request.model);
+      const response = await provider.generateJSON(request, JsonPatchSchema);
 
-      await this.budgetManager.addUsage(response.tokensUsed, response.costUSD);
+      await this.budgetManager.addUsage({
+        tokens: response.tokensUsed,
+        cost: response.costUSD,
+        wallTime: response.duration / 1000
+      });
       return response.data;
     } catch (error: any) {
       // Zodバリデーションエラーで空オブジェクトの場合のみ空配列でリトライ

@@ -11,17 +11,12 @@ dotenv.config();
 import { initializeSchemas } from './lib/schema-initializer.js';
 import { ConceptPlanner } from './agents/concept-planner.js';
 import { AssetSynthesizer } from './agents/asset-synthesizer.js';
-import { BudgetManager } from './lib/budget.js';
 import { ShotPlanSchema, AssetManifestSchema } from './schemas/index.js';
-import { AgentOrchestrator } from './lib/agent-orchestrator.js';
-import { ConceptPlannerAgent } from './agents/concept-planner-agent.js';
-import { AssetSynthesizerAgent } from './agents/asset-synthesizer-agent.js';
 import { DirectorAgent } from './agents/director-agent.js';
 import { ConfigurationManager } from './lib/config-manager.js';
-import { ParallelOrchestrator } from './lib/parallel-orchestrator.js';
 import { CacheManager } from './lib/cache-manager.js';
 import { ProgressManager, withProgress } from './lib/progress-manager.js';
-import { PipelineManager } from './lib/pipeline-manager.js';
+import { DualBudgetManager } from './lib/dual-budget-manager.js';
 
 // 新しいエージェントと発展例のインポート
 import { EditorAgent } from './agents/editor-agent.js';

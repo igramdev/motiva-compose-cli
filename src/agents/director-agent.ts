@@ -1,7 +1,9 @@
 import { z } from 'zod';
-import { BaseAgent } from '../lib/agent-orchestrator.js';
-import { OpenAIWrapper } from '../lib/openai.js';
+import * as fs from 'fs/promises';
+import * as path from 'path';
 import { ConfigurationManager } from '../lib/config-manager.js';
+import { llmProviderManager, LLMRequest, LLMResponse } from '../lib/llm-provider.js';
+import { DualBudgetManager, CostEstimate } from '../lib/dual-budget-manager.js';
 import chalk from 'chalk';
 
 // Director Agentの入力スキーマ
@@ -108,26 +110,29 @@ export type DirectorOutput = z.infer<typeof DirectorOutputSchema>;
 /**
  * Director Agent: ショットプランとAsset Manifestを統合し、最終的な動画構成を決定
  */
-export class DirectorAgent extends BaseAgent<DirectorInput, DirectorOutput> {
+export class DirectorAgent {
   name = 'director';
   inputSchema = DirectorInputSchema;
   outputSchema = DirectorOutputSchema;
   
-  private openai: OpenAIWrapper;
   private configManager: ConfigurationManager;
+  private systemPrompt: string | null = null;
 
   constructor() {
-    super();
-    this.openai = new OpenAIWrapper();
     this.configManager = ConfigurationManager.getInstance();
   }
 
-  async run(input: DirectorInput): Promise<DirectorOutput> {
-    console.log(chalk.blue('🎬 Director Agent: 動画構成決定中...'));
+  private async loadSystemPrompt(): Promise<string> {
+    if (this.systemPrompt) return this.systemPrompt;
 
-    const config = await this.configManager.getAgentConfig('director');
-    
-    const systemPrompt = `あなたは経験豊富な動画ディレクターです。
+    try {
+      const promptPath = path.join(process.cwd(), 'prompts', 'director', 'v1_system.txt');
+      this.systemPrompt = await fs.readFile(promptPath, 'utf8');
+      return this.systemPrompt;
+    } catch (error) {
+      // フォールバック用の最小限のプロンプト
+      this.systemPrompt = `
+あなたは経験豊富な動画ディレクターです。
 Asset Manifestを分析し、最終的な動画構成を決定してください。
 
 ## 役割
@@ -154,23 +159,34 @@ Asset Manifestを分析し、最終的な動画構成を決定してください
 ## 注意事項
 - 各アセットの開始・終了時間を正確に計算
 - 実現可能なトランジション効果を選択
-- オーディオの同期とボリューム調整`;
+- オーディオの同期とボリューム調整
+      `.trim();
+      return this.systemPrompt;
+    }
+  }
+
+  async run(input: DirectorInput): Promise<DirectorOutput> {
+    console.log(chalk.blue('🎬 Director Agent: 動画構成決定中...'));
+
+    const config = await this.configManager.getAgentConfig('director');
+    
+    const systemPrompt = await this.loadSystemPrompt();
 
     const userInput = `## Asset Manifest
 ${JSON.stringify(input, null, 2)}
 
 上記の情報を基に、最終的な動画構成を決定してください。`;
 
-    const response = await this.openai.generateJSON(
+    const provider = llmProviderManager.getProviderForModel(config.provider || 'gpt-4o-mini');
+    const response = await provider.generateJSON(
       {
-        model: config.provider,
+        model: config.provider || 'gpt-4o-mini',
         systemPrompt,
         userInput,
-        temperature: config.temperature,
-        maxTokens: config.maxTokens
+        temperature: config.temperature || 0.7,
+        maxTokens: config.maxTokens || 4096
       },
-      this.outputSchema,
-      'director_composition_schema'
+      this.outputSchema
     );
 
     console.log(chalk.green('✅ 動画構成決定完了'));

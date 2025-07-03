@@ -11,6 +11,11 @@
     "build": "tsc",
     "dev": "tsc --watch",
     "test": "vitest",
+    "test:pipeline": "NODE_ENV=test npx tsx mock-pipeline-test.ts",
+    "test:mock": "NODE_ENV=test npx tsx mock-test.ts",
+    "test:api": "npx tsx api-test.ts",
+    "test:dsl": "npx tsx pipeline-test.ts",
+    "test:parallel": "npx tsx parallel-pipeline-test.ts",
     "lint": "eslint src --ext .ts",
     "start": "node dist/index.js"
   },

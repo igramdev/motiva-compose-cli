@@ -1,9 +1,10 @@
 import { z } from 'zod';
-import { BaseAgent } from '../lib/agent-orchestrator.js';
-import { BudgetManager } from '../lib/budget.js';
+import * as fs from 'fs/promises';
+import * as path from 'path';
 import { SceneGraph, SceneGraphSchema } from '../schemas/index.js';
-import { ConfigurationManager, AgentConfig } from '../lib/config-manager.js';
-import { OpenAIWrapper, LLMRequest } from '../lib/openai.js';
+import { ConfigurationManager } from '../lib/config-manager.js';
+import { llmProviderManager, LLMRequest, LLMResponse } from '../lib/llm-provider.js';
+import { DualBudgetManager, CostEstimate } from '../lib/dual-budget-manager.js';
 import chalk from 'chalk';
 
 // Critic Report Schema
@@ -33,28 +34,31 @@ const CriticReportSchema = z.object({
 /**
  * Critic/QA Agent: 品質評価・フィードバックを担当
  */
-export class CriticAgent extends BaseAgent<SceneGraph, z.infer<typeof CriticReportSchema>> {
+export class CriticAgent {
   name = 'critic';
   inputSchema = SceneGraphSchema;
   outputSchema = CriticReportSchema;
 
-  private openai: OpenAIWrapper;
-  private budgetManager: BudgetManager;
+  private budgetManager: DualBudgetManager;
   private configManager: ConfigurationManager;
+  private systemPrompt: string | null = null;
 
-  constructor(budgetManager: BudgetManager, apiKey?: string) {
-    super();
-    this.openai = new OpenAIWrapper(apiKey);
-    this.budgetManager = budgetManager;
+  constructor(budgetManager?: DualBudgetManager) {
+    this.budgetManager = budgetManager || new DualBudgetManager();
     this.configManager = ConfigurationManager.getInstance();
   }
 
-  async run(sceneGraph: SceneGraph): Promise<z.infer<typeof CriticReportSchema>> {
-    console.log(chalk.blue('🎬 Critic Agent: 品質評価・フィードバック生成中...'));
+  private async loadSystemPrompt(): Promise<string> {
+    if (this.systemPrompt) return this.systemPrompt;
 
-    const config = await this.configManager.getAgentConfig('critic');
-    
-    const systemPrompt = `あなたは経験豊富な映像品質管理担当者です。
+    try {
+      const promptPath = path.join(process.cwd(), 'prompts', 'critic', 'v1_system.txt');
+      this.systemPrompt = await fs.readFile(promptPath, 'utf8');
+      return this.systemPrompt;
+    } catch (error) {
+      // フォールバック用の最小限のプロンプト
+      this.systemPrompt = `
+あなたは経験豊富な映像品質管理担当者です。
 SceneGraphを詳細に分析し、包括的な品質評価レポートを生成してください。
 
 評価基準：
@@ -66,7 +70,18 @@ SceneGraphを詳細に分析し、包括的な品質評価レポートを生成�
 各項目を0-100のスコアで評価し、具体的な改善提案を含めてください。
 
 **重要**: reviewDateは必ずISO 8601の完全な日時形式で出力してください。
-例: "2023-10-01T12:34:56.789Z" または "2023-10-01T12:34:56+09:00"`;
+例: "2023-10-01T12:34:56.789Z" または "2023-10-01T12:34:56+09:00"
+      `.trim();
+      return this.systemPrompt;
+    }
+  }
+
+  async run(sceneGraph: SceneGraph): Promise<z.infer<typeof CriticReportSchema>> {
+    console.log(chalk.blue('🎬 Critic Agent: 品質評価・フィードバック生成中...'));
+
+    const config = await this.configManager.getAgentConfig('critic');
+    
+    const systemPrompt = await this.loadSystemPrompt();
 
     const userInput = `以下のSceneGraphを詳細に分析し、品質評価レポートを生成してください：
 
@@ -93,19 +108,26 @@ ${JSON.stringify(sceneGraph, null, 2)}
     const estimatedTokens = Math.ceil((systemPrompt.length + userInput.length) / 3);
     const estimatedCost = estimatedTokens * 0.00015 / 1000;
     
-    const canProceed = await this.budgetManager.checkBudgetLimit(estimatedTokens, estimatedCost);
+    const costEstimate: CostEstimate = {
+      tokens: estimatedTokens,
+      estimatedCost: estimatedCost,
+      estimatedWallTime: 30 // 推定30秒
+    };
+    
+    const canProceed = await this.budgetManager.checkBudgetLimit(costEstimate);
     if (!canProceed) {
       throw new Error('予算制限により品質評価を中断しました');
     }
 
     try {
-      const response = await this.openai.generateJSON(
-        request,
-        CriticReportSchema,
-        'critic_report_schema'
-      );
+      const provider = llmProviderManager.getProviderForModel(request.model);
+      const response = await provider.generateJSON(request, CriticReportSchema);
 
-      await this.budgetManager.addUsage(response.tokensUsed, response.costUSD);
+      await this.budgetManager.addUsage({
+        tokens: response.tokensUsed,
+        cost: response.costUSD,
+        wallTime: response.duration / 1000
+      });
 
       console.log(chalk.green('✅ 品質評価レポート生成完了'));
       console.log(chalk.gray(`Token使用量: ${response.tokensUsed}, コスト: $${response.costUSD.toFixed(4)}`));

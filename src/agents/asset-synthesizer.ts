@@ -1,8 +1,8 @@
 import * as fs from 'fs/promises';
 import * as path from 'path';
 import chalk from 'chalk';
-import { OpenAIWrapper, LLMRequest } from '../lib/openai.js';
-import { BudgetManager } from '../lib/budget.js';
+import { llmProviderManager, LLMRequest, LLMResponse } from '../lib/llm-provider.js';
+import { DualBudgetManager, CostEstimate } from '../lib/dual-budget-manager.js';
 import { ShotPlan, AssetManifest, AssetManifestSchema, AssetItem } from '../schemas/index.js';
 
 export interface AssetSynthesizerConfig {
@@ -14,16 +14,14 @@ export interface AssetSynthesizerConfig {
 }
 
 export class AssetSynthesizer {
-  private openai: OpenAIWrapper;
-  private budgetManager: BudgetManager;
+  private budgetManager: DualBudgetManager;
   private systemPrompt: string | null = null;
 
   constructor(
-    budgetManager: BudgetManager,
+    budgetManager?: DualBudgetManager,
     apiKey?: string
   ) {
-    this.openai = new OpenAIWrapper(apiKey);
-    this.budgetManager = budgetManager;
+    this.budgetManager = budgetManager || new DualBudgetManager();
   }
 
   private async loadSystemPrompt(): Promise<string> {
@@ -122,20 +120,27 @@ generatorは "mock" を使用し、実用的な見積もりコストを含めて
     );
     const estimatedCost = estimatedTokens * 0.00015 / 1000; // gpt-4o-mini基準
 
-    const canProceed = await this.budgetManager.checkBudgetLimit(estimatedTokens, estimatedCost);
+    const costEstimate: CostEstimate = {
+      tokens: estimatedTokens,
+      estimatedCost: estimatedCost,
+      estimatedWallTime: 30 // 推定30秒
+    };
+    
+    const canProceed = await this.budgetManager.checkBudgetLimit(costEstimate);
     if (!canProceed) {
       throw new Error('予算制限により処理を中断しました');
     }
 
     try {
-      const response = await this.openai.generateJSON(
-        request,
-        AssetManifestSchema,
-        'asset_manifest_schema'
-      );
+      const provider = llmProviderManager.getProviderForModel(request.model);
+      const response = await provider.generateJSON(request, AssetManifestSchema);
 
       // 実際の使用量を記録
-      await this.budgetManager.addUsage(response.tokensUsed, response.costUSD);
+      await this.budgetManager.addUsage({
+        tokens: response.tokensUsed,
+        cost: response.costUSD,
+        wallTime: response.duration / 1000
+      });
 
       console.log(chalk.green('✅ Asset Manifest 生成完了'));
       console.log(chalk.gray(`Token使用量: ${response.tokensUsed}, コスト: $${response.costUSD.toFixed(4)}`));
