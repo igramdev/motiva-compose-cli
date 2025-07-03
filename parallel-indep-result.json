@@ -1,0 +1,199 @@
+[
+  {
+    "sceneId": "scene_001",
+    "duration": 30,
+    "theme": "感情の変化と人間関係の深まり",
+    "shots": [
+      {
+        "id": "shot_001",
+        "start": 0,
+        "len": 10,
+        "desc": "主人公が窓の外を見つめ、雨が降り始める。心の中の孤独感を表現。"
+      },
+      {
+        "id": "shot_002",
+        "start": 10,
+        "len": 15,
+        "desc": "友人からの電話が鳴る。主人公が驚いた表情を浮かべ、電話を取る瞬間の緊張感。"
+      },
+      {
+        "id": "shot_003",
+        "start": 25,
+        "len": 15,
+        "desc": "友人との再会シーン。2人が笑い合い、過去の思い出を語る。温かい雰囲気を強調。"
+      },
+      {
+        "id": "shot_004",
+        "start": 40,
+        "len": 15,
+        "desc": "主人公が感情的になり、涙を流す。友人が優しくその手を握る。感情の高まりを強調。"
+      },
+      {
+        "id": "shot_005",
+        "start": 55,
+        "len": 15,
+        "desc": "最後のシーンで、雨が止み、窓の外に美しい虹が出現。新たな希望の象徴。"
+      }
+    ],
+    "bgm": {
+      "style": "感動的なピアノ",
+      "bpm": 60
+    }
+  },
+  {
+    "sceneId": "test_prompt_2",
+    "version": "1.0",
+    "assets": [
+      {
+        "id": "video_s1",
+        "type": "video",
+        "uri": null,
+        "generator": "mock",
+        "spec": {
+          "description": "テストプロンプトに基づく動画コンテンツのロングショット",
+          "duration": 15,
+          "dimensions": {
+            "width": 1920,
+            "height": 1080
+          },
+          "format": "mp4",
+          "style": "ドキュメンタリー",
+          "quality": "standard"
+        },
+        "status": "pending",
+        "metadata": {
+          "shotId": "shot_1",
+          "createdAt": null,
+          "estimatedCost": 0.3,
+          "actualCost": null
+        }
+      },
+      {
+        "id": "bgm_main",
+        "type": "audio",
+        "uri": null,
+        "generator": "mock",
+        "spec": {
+          "description": "動画内容にマッチしたBGM",
+          "duration": 15,
+          "dimensions": null,
+          "format": "wav",
+          "style": "オーケストラ",
+          "quality": "standard"
+        },
+        "status": "pending",
+        "metadata": {
+          "shotId": "shot_1",
+          "createdAt": null,
+          "estimatedCost": 0.2,
+          "actualCost": null
+        }
+      },
+      {
+        "id": "effect_transition",
+        "type": "effect",
+        "uri": null,
+        "generator": "mock",
+        "spec": {
+          "description": "シーン間のトランジションエフェクト",
+          "duration": 2,
+          "dimensions": null,
+          "format": "mp4",
+          "style": "フェードインアウト",
+          "quality": "standard"
+        },
+        "status": "pending",
+        "metadata": {
+          "shotId": "shot_1",
+          "createdAt": null,
+          "estimatedCost": 0.1,
+          "actualCost": null
+        }
+      }
+    ],
+    "generators": {
+      "mock": {
+        "name": "Mock Generator",
+        "type": "mock",
+        "config": {}
+      }
+    },
+    "totalEstimatedCost": 0.6
+  },
+  {
+    "sceneId": "scene_001",
+    "version": "1.0",
+    "composition": {
+      "title": "テストプロンプト 3: 動画コンテンツの生成",
+      "description": "この動画はテストプロンプトに基づいて、視聴者に動画コンテンツの生成に関する情報を提供します。",
+      "duration": 60,
+      "fps": 30,
+      "resolution": {
+        "width": 1920,
+        "height": 1080
+      },
+      "timeline": [
+        {
+          "id": "asset_001",
+          "start": 0,
+          "end": 30,
+          "assetId": "video_intro",
+          "assetType": "video",
+          "transform": {
+            "x": 0,
+            "y": 0,
+            "scale": 1,
+            "rotation": 0,
+            "opacity": 1
+          },
+          "effects": null
+        },
+        {
+          "id": "asset_002",
+          "start": 30,
+          "end": 60,
+          "assetId": "video_content",
+          "assetType": "video",
+          "transform": {
+            "x": 0,
+            "y": 0,
+            "scale": 1,
+            "rotation": 0,
+            "opacity": 1
+          },
+          "effects": null
+        }
+      ],
+      "audio": {
+        "bgm": {
+          "assetId": "bgm_track_1",
+          "volume": 0.5,
+          "fadeIn": 3,
+          "fadeOut": 3
+        },
+        "sfx": null
+      },
+      "transitions": [
+        {
+          "id": "transition_001",
+          "type": "fade",
+          "duration": 2,
+          "fromShot": "asset_001",
+          "toShot": "asset_002",
+          "params": null
+        }
+      ]
+    },
+    "metadata": {
+      "createdAt": "2023-10-10T12:00:00Z",
+      "totalCost": 100,
+      "estimatedRenderTime": 120,
+      "quality": "standard",
+      "tags": [
+        "動画生成",
+        "テストプロンプト",
+        "コンテンツ制作"
+      ]
+    }
+  }
+]

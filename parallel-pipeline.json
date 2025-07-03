@@ -1,0 +1,96 @@
+{
+  "name": "parallel-asset-pipeline",
+  "description": "Asset Synthesizerを並列実行するパイプライン",
+  "version": "1.0",
+  "agents": [
+    {
+      "name": "concept-planner",
+      "type": "concept-planner",
+      "parallel": false,
+      "config": {
+        "model": "gpt-4o-mini",
+        "temperature": 0.7,
+        "maxTokens": 4096
+      }
+    },
+    {
+      "name": "asset-synthesizer-video",
+      "type": "asset-synthesizer",
+      "parallel": true,
+      "parallelGroup": "asset-generation",
+      "dependencies": ["concept-planner"],
+      "config": {
+        "model": "gpt-4o-mini",
+        "temperature": 0.5,
+        "maxTokens": 6144,
+        "quality": "standard"
+      },
+      "input": {
+        "focus": "video-assets",
+        "priority": "high"
+      }
+    },
+    {
+      "name": "asset-synthesizer-audio",
+      "type": "asset-synthesizer",
+      "parallel": true,
+      "parallelGroup": "asset-generation",
+      "dependencies": ["concept-planner"],
+      "config": {
+        "model": "gpt-4o-mini",
+        "temperature": 0.5,
+        "maxTokens": 6144,
+        "quality": "standard"
+      },
+      "input": {
+        "focus": "audio-assets",
+        "priority": "medium"
+      }
+    },
+    {
+      "name": "asset-synthesizer-effects",
+      "type": "asset-synthesizer",
+      "parallel": true,
+      "parallelGroup": "asset-generation",
+      "dependencies": ["concept-planner"],
+      "config": {
+        "model": "gpt-4o-mini",
+        "temperature": 0.5,
+        "maxTokens": 6144,
+        "quality": "standard"
+      },
+      "input": {
+        "focus": "effects-assets",
+        "priority": "low"
+      }
+    },
+    {
+      "name": "director",
+      "type": "director",
+      "parallel": false,
+      "dependencies": ["asset-synthesizer-video", "asset-synthesizer-audio", "asset-synthesizer-effects"]
+    }
+  ],
+  "parallelGroups": [
+    {
+      "name": "asset-generation",
+      "description": "Asset Synthesizerの並列実行グループ",
+      "maxConcurrency": 3,
+      "timeout": 60000,
+      "retryCount": 2,
+      "retryDelay": 2000
+    }
+  ],
+  "options": {
+    "maxConcurrency": 5,
+    "timeout": 120000,
+    "useCache": true,
+    "showProgress": true,
+    "enableParallel": true
+  },
+  "metadata": {
+    "createdAt": "2025-07-03T06:30:00.000Z",
+    "author": "system",
+    "tags": ["parallel", "asset-generation", "video-production"]
+  }
+} 

@@ -1,0 +1,36 @@
+{
+  "pipelineName": "advanced-5-stage-pipeline",
+  "executionId": "0ac8adf5-0ee4-436d-879b-4fc150255e72",
+  "startTime": "2025-07-03T07:02:07.941Z",
+  "endTime": "2025-07-03T07:02:07.945Z",
+  "duration": 3,
+  "status": "success",
+  "results": [
+    {
+      "agentName": "pipeline",
+      "status": "success",
+      "duration": 3,
+      "output": {
+        "overallScore": 0,
+        "qualityAssessment": {
+          "visualQuality": 0,
+          "narrativeFlow": 0,
+          "technicalExecution": 0,
+          "emotionalImpact": 0
+        },
+        "issues": [],
+        "strengths": [],
+        "recommendations": [
+          "具体的なSceneGraphデータを提供してください。"
+        ],
+        "metadata": {
+          "reviewDate": "2023-10-01T12:34:56.000Z",
+          "reviewer": "映像品質管理担当者",
+          "version": "1.0"
+        }
+      }
+    }
+  ],
+  "totalTokens": 0,
+  "totalCost": 0
+}

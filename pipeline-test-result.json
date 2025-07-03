@@ -1,0 +1,104 @@
+{
+  "pipelineName": "default-pipeline",
+  "executionId": "b5bb5b9c-212a-4ed3-82a1-99dfc19b7074",
+  "startTime": "2025-07-03T06:05:51.626Z",
+  "endTime": "2025-07-03T06:05:51.630Z",
+  "duration": 3,
+  "status": "success",
+  "results": [
+    {
+      "agentName": "pipeline",
+      "status": "success",
+      "duration": 3,
+      "output": {
+        "sceneId": "nature_beauty_shortfilm",
+        "version": "1.0",
+        "composition": {
+          "title": "自然の美しさ",
+          "description": "この短編映像は、自然の中での美しい瞬間を捉えたものです。朝日、流れる川、そして色とりどりの花々が織り成す情景を楽しんでください。",
+          "duration": 30,
+          "fps": 30,
+          "resolution": {
+            "width": 1920,
+            "height": 1080
+          },
+          "timeline": [
+            {
+              "id": "video_shot1",
+              "start": 0,
+              "end": 10,
+              "assetId": "video_shot1",
+              "assetType": "video",
+              "transform": null,
+              "effects": null
+            },
+            {
+              "id": "video_shot2",
+              "start": 10,
+              "end": 20,
+              "assetId": "video_shot2",
+              "assetType": "video",
+              "transform": null,
+              "effects": null
+            },
+            {
+              "id": "video_shot3",
+              "start": 20,
+              "end": 30,
+              "assetId": "video_shot3",
+              "assetType": "video",
+              "transform": null,
+              "effects": null
+            }
+          ],
+          "audio": {
+            "bgm": {
+              "assetId": "audio_bgm",
+              "volume": 0.7,
+              "fadeIn": 2,
+              "fadeOut": 2
+            },
+            "sfx": [
+              {
+                "assetId": "effect_nature_ambience",
+                "start": 0,
+                "volume": 0.3
+              }
+            ]
+          },
+          "transitions": [
+            {
+              "id": "fade_to_black",
+              "type": "fade",
+              "duration": 1,
+              "fromShot": "video_shot1",
+              "toShot": "video_shot2",
+              "params": null
+            },
+            {
+              "id": "fade_to_black",
+              "type": "fade",
+              "duration": 1,
+              "fromShot": "video_shot2",
+              "toShot": "video_shot3",
+              "params": null
+            }
+          ]
+        },
+        "metadata": {
+          "createdAt": "2023-10-01T00:00:00Z",
+          "totalCost": 2.4,
+          "estimatedRenderTime": 60,
+          "quality": "standard",
+          "tags": [
+            "自然",
+            "短編映像",
+            "美しい風景"
+          ]
+        }
+      }
+    }
+  ],
+  "totalTokens": 0,
+  "totalCost": 0
+}

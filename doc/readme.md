@@ -1,6 +1,36 @@
 # Motiva Compose CLI — Draft Documentation
 
-> **Status** : Draft v0.1 (2025-07-03) — feedback welcome via GitHub issues or Cursor comments.
+---
+
+## 🚩 実装状況まとめ（2025-07-03時点）
+
+### ✅ 実装済み・利用可能
+- 5段階パイプライン（ConceptPlanner→AssetSynthesizer→Director→Editor→Critic）
+- 並列処理・キャッシュ・プログレス表示のCLIコマンド
+- パイプライン定義ファイルによる柔軟なパイプライン設計
+- キャッシュ統計・キャッシュ管理コマンドの改善
+- 予算制限のリセット・調査方法
+- OpenAI APIリクエストのデバッグログ追加
+- 真の並列パイプライン（ParallelPipelineOrchestrator）の実装
+- CLIの`pipeline-parallel`コマンド追加
+- リトライ・エラーリカバリ強化（ErrorClassifierによる詳細分類・自動リトライ）
+- Editor/Critic/通知/レポート各エージェントの追加とテスト
+- Critic AgentのISO 8601日時バリデーション対応
+
+### 🟡 ドキュメントに追記推奨（現状反映が薄い）
+- 高度なエラーハンドリング・リトライ戦略の詳細
+- キャッシュ・並列処理の効果検証やベンチマーク例
+- CLI新コマンド（`advanced`, `notify`, `report`, `pipeline-parallel` など）の説明
+- motiva.config.tsの詳細例（エージェント/キャッシュ/並列/通知/レポート設定）
+
+### 🟥 未実装・今後の優先課題
+- Remotion等の動画生成エンジン統合（Phase 7/8で延期中）
+- APIサーバー/HTTPエンドポイント（Phase 8計画のみ）
+- プラグインシステム・カスタムエージェント（Phase 8計画のみ）
+- テンプレート/バッチ/自動バックアップ機能（Phase 8計画のみ）
+- 詳細なメトリクス・構造化ログ・ヘルスチェック（Phase 8計画のみ）
+- CI/CD自動デプロイ・APIドキュメント自動生成（Phase 8計画のみ）
+- Remotion Player/Rendererとの完全統合（`render`コマンドの本格実装）
 
 ---
 
@@ -332,10 +362,22 @@ export const SceneGraphSchema = z.object({
 
 | Phase | ゴール / 含む CLI コマンド | ステータス |
 |-------|---------------------------|------------|
-| **1 (MVP)** | **Core CLI** &nbsp;`init` / `plan` / `validate` / **budget 管理**<br> • Concept Planner LLM 呼び出し<br> • Zod 基本スキーマ検証<br> • ShotPlan 致命的エラーチェックのみ<br> • stdin パイプ UI | 実装中 — 7/7 Preview PR 予定 |
-| **2** | `synth` で Asset Synthesizer 追加<br>ローカルファイル管理・予算アラート強化 | 設計中 |
-| **3** | `compose` / `explain` — Multi-Agent Orchestration<br>JSON Patch 適用・自然言語 Diff | 未着手 |
-| **4** | `render` — Remotion 統合 & HLS プレビュー<br>ffmpeg or Remotion Lambda 連携 | 未着手 |
+| **1 (MVP)** | **Core CLI** &nbsp;`init` / `plan` / `validate` / **budget 管理**<br> • Concept Planner LLM 呼び出し<br> • Zod 基本スキーマ検証<br> • ShotPlan 致命的エラーチェックのみ<br> • stdin パイプ UI | ✅ 完成 |
+| **2** | `synth` で Asset Synthesizer 追加<br>ローカルファイル管理・予算アラート強化 | ✅ 完成 |
+| **3** | `compose` / `explain` — Multi-Agent Orchestration<br>JSON Patch 適用・自然言語 Diff | ✅ 完成 |
+| **4** | `render` — Remotion 統合 & HLS プレビュー<br>ffmpeg or Remotion Lambda 連携 | 🔄 後日実装予定 |
+| **5** | `orchestrate` — マルチエージェントパイプライン<br>ConceptPlanner → AssetSynthesizer → Director | ✅ 完成 |
+| **6** | Schema Registry & Configuration Manager<br>エラーハンドリング・リトライ機構 | ✅ 完成 |
+| **7** | 動画生成エンジン統合<br>Remotion レンダリング・プレビュー | 🔄 後日実装予定 |
+| **8** | 高度機能・プロダクション化<br>拡張機能・パフォーマンス最適化 | 📋 実装予定 |
+
+### 実装方針の変更 (2025-07-03 更新)
+
+**動画生成エンジン統合の延期**
+- **Phase 7** (Remotion統合) は後日実装予定
+- **理由**: ローカルコンピュータでのテストに時間がかかるため
+- **代替**: Phase 8 (高度機能・プロダクション化) を優先実装
+- **影響**: 現在の3段階パイプラインは完全動作、JSON出力で十分な検証が可能
 
 ### 合意済み実装ポイント
 
@@ -801,4 +843,134 @@ export class Logger {
 
 ---
 
-*End of Phase 2 課題分析 — Phase 3 実装準備完了*
+## 17 Phase 8 実装計画: 高度機能・プロダクション化 (2025-07-03 更新)
+
+### 17.1 Phase 8 の目標
+
+動画生成エンジン統合を後日に延期し、代わりに以下の高度機能とプロダクション化を優先実装します。
+
+#### 🎯 **主要目標**
+- **パフォーマンス最適化**: 大規模プロジェクト対応
+- **拡張機能**: プラグインシステム・カスタムエージェント
+- **プロダクション品質**: エラー処理・監視・ログ
+- **開発者体験**: CLI改善・ドキュメント・テスト
+
+### 17.2 Phase 8 実装項目
+
+#### **Week 1: パフォーマンス最適化**
+1. **並列処理**: 複数エージェントの同時実行
+2. **キャッシュシステム**: 中間結果の永続化
+3. **メモリ最適化**: 大規模JSON処理の効率化
+4. **プログレス表示**: 長時間処理の進捗表示
+
+#### **Week 2: 拡張機能**
+5. **プラグインシステム**: カスタムエージェント・ジェネレーター
+6. **テンプレート機能**: プリセット・プロジェクトテンプレート
+7. **バッチ処理**: 複数プロジェクトの一括処理
+8. **API サーバー**: HTTP API エンドポイント
+
+#### **Week 3: プロダクション品質**
+9. **詳細ログ**: 構造化ログ・ログレベル制御
+10. **メトリクス**: パフォーマンス・使用量監視
+11. **ヘルスチェック**: システム状態監視
+12. **バックアップ**: 設定・データの自動バックアップ
+
+#### **Week 4: 開発者体験**
+13. **CLI改善**: インタラクティブモード・オートコンプリート
+14. **ドキュメント**: API仕様・チュートリアル
+15. **テスト拡張**: 統合テスト・パフォーマンステスト
+16. **CI/CD**: 自動デプロイ・リリース管理
+
+### 17.3 技術的改善案
+
+#### **並列処理システム**
+```typescript
+// 提案: エージェントの並列実行
+export class ParallelOrchestrator {
+  async executeParallel<T>(
+    agents: BaseAgent[],
+    input: any,
+    maxConcurrency: number = 3
+  ): Promise<T[]> {
+    const semaphore = new Semaphore(maxConcurrency);
+    const tasks = agents.map(agent => 
+      semaphore.acquire().then(() => agent.run(input))
+    );
+    return Promise.all(tasks);
+  }
+}
+```
+
+#### **プラグインシステム**
+```typescript
+// 提案: プラグイン管理
+export interface Plugin {
+  name: string;
+  version: string;
+  register(registry: PluginRegistry): void;
+}
+
+export class PluginRegistry {
+  private plugins = new Map<string, Plugin>();
+  
+  register(plugin: Plugin): void {
+    this.plugins.set(plugin.name, plugin);
+  }
+  
+  getPlugin(name: string): Plugin | undefined {
+    return this.plugins.get(name);
+  }
+}
+```
+
+#### **API サーバー**
+```typescript
+// 提案: HTTP API エンドポイント
+export class APIServer {
+  constructor(private orchestrator: AgentOrchestrator) {}
+  
+  @Post('/api/v1/pipeline')
+  async executePipeline(req: PipelineRequest): Promise<PipelineResponse> {
+    const result = await this.orchestrator.execute(req.pipeline, req.input);
+    return { success: true, data: result };
+  }
+  
+  @Get('/api/v1/status')
+  async getStatus(): Promise<StatusResponse> {
+    return { status: 'healthy', uptime: process.uptime() };
+  }
+}
+```
+
+### 17.4 成功指標
+
+| 項目 | 現状 | Phase 8 目標 | 測定方法 |
+|------|------|-------------|----------|
+| **処理速度** | 30秒/プロジェクト | 10秒/プロジェクト | ベンチマークテスト |
+| **メモリ使用量** | 500MB | 200MB | メモリプロファイリング |
+| **エラー率** | 5% | 1%以下 | エラーログ分析 |
+| **開発者満足度** | 中 | 高 | ユーザー調査 |
+| **拡張性** | 低 | 高 | プラグイン数・カスタマイズ性 |
+
+### 17.5 リスク管理
+
+#### **技術的リスク**
+- **並列処理の複雑性**: 段階的実装・十分なテスト
+- **プラグインセキュリティ**: サンドボックス・権限管理
+- **パフォーマンス劣化**: 継続的ベンチマーク・最適化
+
+#### **運用リスク**
+- **後方互換性**: バージョン管理・マイグレーション
+- **データ整合性**: バックアップ・復旧手順
+- **ユーザー教育**: ドキュメント・チュートリアル
+
+### 17.6 次のステップ
+
+1. **Phase 8 詳細設計**: 各機能の詳細仕様策定
+2. **プロトタイプ開発**: 並列処理・プラグインシステム
+3. **ベンチマーク**: 現在のパフォーマンス測定
+4. **ユーザーフィードバック**: 優先度の再確認
+
+---
+
+*Phase 8 実装計画完了 — 動画生成エンジン統合は後日実装予定*

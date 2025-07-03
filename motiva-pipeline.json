@@ -1,0 +1,50 @@
+{
+  "name": "default-pipeline",
+  "description": "デフォルトの3段階パイプライン",
+  "version": "1.0",
+  "agents": [
+    {
+      "name": "concept-planner",
+      "type": "concept-planner",
+      "config": {
+        "model": "gpt-4o-mini",
+        "temperature": 0.7,
+        "maxTokens": 4096
+      }
+    },
+    {
+      "name": "asset-synthesizer",
+      "type": "asset-synthesizer",
+      "config": {
+        "model": "gpt-4o-mini",
+        "temperature": 0.5,
+        "maxTokens": 6144,
+        "quality": "standard"
+      },
+      "dependencies": [
+        "concept-planner"
+      ]
+    },
+    {
+      "name": "director",
+      "type": "director",
+      "dependencies": [
+        "asset-synthesizer"
+      ]
+    }
+  ],
+  "options": {
+    "maxConcurrency": 3,
+    "timeout": 30000,
+    "useCache": true,
+    "showProgress": true
+  },
+  "metadata": {
+    "createdAt": "2025-07-03T06:21:49.845Z",
+    "author": "system",
+    "tags": [
+      "default",
+      "3-stage"
+    ]
+  }
+}

@@ -73,15 +73,15 @@ export class ConfigurationManager {
       return this.config;
     }
 
-    try {
-      // 設定ファイルの存在確認
-      const exists = await this.configExists();
-      if (!exists) {
-        console.log(chalk.yellow('⚠️  設定ファイルが見つかりません。デフォルト設定を使用します。'));
-        this.config = this.getDefaultConfig();
-        return this.config;
-      }
+    // 設定ファイルの存在確認
+    const exists = await this.configExists();
+    if (!exists) {
+      console.log(chalk.yellow('⚠️  設定ファイルが見つかりません。デフォルト設定を使用します。'));
+      this.config = this.getDefaultConfig();
+      return this.config;
+    }
 
+    try {
       // TypeScript設定ファイルを動的に読み込み
       const configModule = await this.loadTypeScriptConfig();
       const rawConfig = configModule.default || configModule;
@@ -116,30 +116,20 @@ export class ConfigurationManager {
    * TypeScript設定ファイルを動的に読み込み
    */
   private async loadTypeScriptConfig(): Promise<any> {
-    // 簡易的なTypeScript設定ファイル読み込み
-    // 実際のプロダクションでは、より堅牢な方法を使用
-    const configContent = await fs.readFile(this.configPath, 'utf8');
-    
-    // TypeScriptのexport defaultをJavaScriptに変換
-    const jsContent = configContent
-      .replace(/import.*from.*['"];?\n?/g, '')
-      .replace(/export default/, 'module.exports =')
-      .replace(/defineConfig\(/g, '(');
-    
-    // 一時的なJavaScriptファイルを作成
-    const tempJsPath = this.configPath.replace('.ts', '.temp.js');
-    await fs.writeFile(tempJsPath, jsContent);
-    
     try {
-      const config = require(tempJsPath);
-      await fs.unlink(tempJsPath); // 一時ファイルを削除
-      return config;
+      // 設定ファイルの存在を再確認
+      const exists = await this.configExists();
+      if (!exists) {
+        return this.getDefaultConfig();
+      }
+      
+      // ESモジュール環境での動的インポート
+      const configModule = await import(this.configPath);
+      return configModule.default || configModule;
     } catch (error) {
-      // 一時ファイルの削除を試行
-      try {
-        await fs.unlink(tempJsPath);
-      } catch {}
-      throw error;
+      // 設定ファイルが存在しない場合はデフォルト設定を返す
+      console.log(chalk.yellow('⚠️  設定ファイルの読み込みに失敗。デフォルト設定を使用します。'));
+      return this.getDefaultConfig();
     }
   }
 

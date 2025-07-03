@@ -3,6 +3,7 @@ import { z } from 'zod';
 import chalk from 'chalk';
 import { SchemaRegistry } from './schema-registry.js';
 import { withRetryForErrorTypes } from './retry.js';
+import { ErrorType } from './error-classifier.js';
 
 export interface LLMRequest {
   model: string;
@@ -343,14 +344,23 @@ export class OpenAIWrapper {
       console.log(chalk.gray(`🔧 動的スキーマ生成: ${schemaName}`));
     }
 
-    // デバッグ: 生成されたJSON Schemaを表示
-    console.log(chalk.gray('📋 生成されたJSON Schema:'), JSON.stringify(jsonSchema, null, 2));
+    // デバッグ: 生成されたJSON Schemaを表示（環境変数で制御）
+    if (process.env.MOTIVA_DEBUG_SCHEMA === 'true') {
+      const schemaSummary = {
+        type: jsonSchema.type,
+        properties: Object.keys(jsonSchema.properties || {}),
+        required: jsonSchema.required || [],
+        description: jsonSchema.description
+      };
+      console.log(chalk.gray('📋 スキーマ概要:'), JSON.stringify(schemaSummary, null, 2));
+    }
 
     console.log(chalk.green('✅ Structured Outputsを使用'));
     console.log(chalk.gray(`📋 スキーマ: ${schemaName}`));
 
     return await withRetryForErrorTypes(
       async () => {
+        console.log(chalk.yellow('🟡 OpenAI APIリクエスト送信直前'));
         const response = await this.client.chat.completions.create({
           model,
           messages: [
@@ -368,6 +378,7 @@ export class OpenAIWrapper {
             }
           }
         });
+        console.log(chalk.green('🟢 OpenAI APIレスポンス受信'));
 
         return this.parseAndValidate(response, schema);
       },
@@ -426,7 +437,6 @@ export class OpenAIWrapper {
     try {
       const parsed = JSON.parse(content);
       const validated = schema.parse(parsed);
-      
       return {
         data: validated,
         tokensUsed,
@@ -436,7 +446,10 @@ export class OpenAIWrapper {
       if (error instanceof z.ZodError) {
         console.error(chalk.red('Zod検証エラー:'), error.errors);
         console.error(chalk.gray('受信データ:'), content);
-        throw new Error(`スキーマ検証エラー: ${error.errors.map(e => `${e.path.join('.')}: ${e.message}`).join(', ')}`);
+        // 受信データをエラーオブジェクトに含めてthrow
+        const zodErr: any = new Error(`スキーマ検証エラー: ${error.errors.map(e => `${e.path.join('.')}: ${e.message}`).join(', ')}`);
+        zodErr.data = (() => { try { return JSON.parse(content); } catch { return undefined; } })();
+        throw zodErr;
       }
       throw new Error(`JSON解析エラー: ${error}`);
     }

@@ -23,13 +23,13 @@ export class ConceptPlannerAgent extends BaseAgent<string, ShotPlan> {
   }
 
   async run(theme: string): Promise<ShotPlan> {
-    // 設定を取得
+    // 設定を取得（キャッシュを活用）
     const config = await this.configManager.getAgentConfig('conceptPlanner');
     
     return await this.planner.generatePlan(theme, {
-      model: config.provider.replace('openai:', ''),
-      temperature: config.temperature,
-      maxTokens: config.maxTokens
+      model: config.provider?.replace('openai:', '') || 'gpt-4o-mini',
+      temperature: config.temperature || 0.7,
+      maxTokens: config.maxTokens || 4096
     });
   }
 } 

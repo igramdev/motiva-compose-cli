@@ -1,0 +1,18 @@
+{
+  "pipelineName": "default-pipeline",
+  "executionId": "e1d9669f-6507-4240-8e9d-33949cfaa301",
+  "startTime": "2025-07-03T06:21:49.997Z",
+  "endTime": "2025-07-03T06:22:23.584Z",
+  "duration": 33586,
+  "status": "failed",
+  "results": [
+    {
+      "agentName": "pipeline",
+      "status": "failed",
+      "duration": 33586,
+      "error": "Timeout: asset-synthesizer"
+    }
+  ],
+  "totalTokens": 0,
+  "totalCost": 0
+}

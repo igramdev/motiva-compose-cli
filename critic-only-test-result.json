@@ -1,0 +1,55 @@
+{
+  "pipelineName": "critic-only-test",
+  "executionId": "66021f90-1bf9-4580-8f32-7dd2312e2eee",
+  "startTime": "2025-07-03T07:04:21.152Z",
+  "endTime": "2025-07-03T07:04:28.055Z",
+  "duration": 6902,
+  "status": "success",
+  "results": [
+    {
+      "agentName": "pipeline",
+      "status": "success",
+      "duration": 6902,
+      "output": {
+        "overallScore": 85,
+        "qualityAssessment": {
+          "visualQuality": 88,
+          "narrativeFlow": 80,
+          "technicalExecution": 90,
+          "emotionalImpact": 82
+        },
+        "issues": [
+          {
+            "severity": "medium",
+            "category": "narrative",
+            "description": "ストーリーの展開が一部予測可能であり、サプライズが不足している。",
+            "suggestion": "物語のクライマックスにおいて、予想外の展開を加えることで緊張感を高める。"
+          },
+          {
+            "severity": "low",
+            "category": "visual",
+            "description": "一部の背景シーンが単調で、視覚的なインパクトが不足している。",
+            "suggestion": "背景に多様な要素を追加し、視覚的な魅力を向上させる。"
+          }
+        ],
+        "strengths": [
+          "映像の色彩が豊かで、宇宙の美しさが引き立っている。",
+          "技術的な実行が非常に高く、エフェクトが効果的に使用されている。",
+          "感情的なシーンにおいて、視聴者を引き込む力がある。"
+        ],
+        "recommendations": [
+          "ストーリーの構成を見直し、意外性のある展開を追加する。",
+          "背景のバリエーションを増やし、視覚的な厚みを持たせる。",
+          "キャラクターの内面的な葛藤をさらに掘り下げ、観客との感情的なつながりを強化する。"
+        ],
+        "metadata": {
+          "reviewDate": "2023-10-01T12:34:56.789Z",
+          "reviewer": "映像品質管理担当者",
+          "version": "1.0"
+        }
+      }
+    }
+  ],
+  "totalTokens": 0,
+  "totalCost": 0
+}

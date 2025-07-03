@@ -1,0 +1,18 @@
+{
+  "pipelineName": "advanced-5-stage-pipeline",
+  "executionId": "5ce042f0-39d6-4cc5-8375-b31e33a0ce79",
+  "startTime": "2025-07-03T07:02:11.358Z",
+  "endTime": "2025-07-03T07:03:06.173Z",
+  "duration": 54814,
+  "status": "failed",
+  "results": [
+    {
+      "agentName": "pipeline",
+      "status": "failed",
+      "duration": 54814,
+      "error": "予算制限により編集処理を中断しました"
+    }
+  ],
+  "totalTokens": 0,
+  "totalCost": 0
+}

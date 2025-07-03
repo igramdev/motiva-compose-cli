@@ -1,0 +1,149 @@
+{
+  "sceneId": "test_presentation",
+  "version": "1.0",
+  "composition": {
+    "title": "緊張する教室",
+    "description": "テストを受ける生徒たちの緊張感を描いたドキュメンタリー風の映像。",
+    "duration": 70,
+    "fps": 30,
+    "resolution": {
+      "width": 1920,
+      "height": 1080
+    },
+    "timeline": [
+      {
+        "id": "video_s1",
+        "start": 0,
+        "end": 10,
+        "assetId": "video_s1",
+        "assetType": "video",
+        "transform": null,
+        "effects": null
+      },
+      {
+        "id": "video_s2",
+        "start": 10,
+        "end": 25,
+        "assetId": "video_s2",
+        "assetType": "video",
+        "transform": null,
+        "effects": null
+      },
+      {
+        "id": "video_s3",
+        "start": 25,
+        "end": 35,
+        "assetId": "video_s3",
+        "assetType": "video",
+        "transform": null,
+        "effects": null
+      },
+      {
+        "id": "video_s4",
+        "start": 35,
+        "end": 50,
+        "assetId": "video_s4",
+        "assetType": "video",
+        "transform": null,
+        "effects": null
+      },
+      {
+        "id": "video_s5",
+        "start": 50,
+        "end": 65,
+        "assetId": "video_s5",
+        "assetType": "video",
+        "transform": null,
+        "effects": null
+      },
+      {
+        "id": "video_s6",
+        "start": 65,
+        "end": 75,
+        "assetId": "video_s6",
+        "assetType": "video",
+        "transform": null,
+        "effects": null
+      },
+      {
+        "id": "video_s7",
+        "start": 75,
+        "end": 90,
+        "assetId": "video_s7",
+        "assetType": "video",
+        "transform": null,
+        "effects": null
+      }
+    ],
+    "audio": {
+      "bgm": {
+        "assetId": "bgm_main",
+        "volume": 0.5,
+        "fadeIn": 2,
+        "fadeOut": 2
+      },
+      "sfx": null
+    },
+    "transitions": [
+      {
+        "id": "fade_to_black",
+        "type": "fade",
+        "duration": 1,
+        "fromShot": "video_s1",
+        "toShot": "video_s2",
+        "params": null
+      },
+      {
+        "id": "fade_to_black",
+        "type": "fade",
+        "duration": 1,
+        "fromShot": "video_s2",
+        "toShot": "video_s3",
+        "params": null
+      },
+      {
+        "id": "fade_to_black",
+        "type": "fade",
+        "duration": 1,
+        "fromShot": "video_s3",
+        "toShot": "video_s4",
+        "params": null
+      },
+      {
+        "id": "fade_to_black",
+        "type": "fade",
+        "duration": 1,
+        "fromShot": "video_s4",
+        "toShot": "video_s5",
+        "params": null
+      },
+      {
+        "id": "fade_to_black",
+        "type": "fade",
+        "duration": 1,
+        "fromShot": "video_s5",
+        "toShot": "video_s6",
+        "params": null
+      },
+      {
+        "id": "fade_to_black",
+        "type": "fade",
+        "duration": 1,
+        "fromShot": "video_s6",
+        "toShot": "video_s7",
+        "params": null
+      }
+    ]
+  },
+  "metadata": {
+    "createdAt": "2023-10-10T10:00:00Z",
+    "totalCost": 2.8,
+    "estimatedRenderTime": 120,
+    "quality": "standard",
+    "tags": [
+      "ドキュメンタリー",
+      "教育",
+      "緊張感"
+    ]
+  }
+}

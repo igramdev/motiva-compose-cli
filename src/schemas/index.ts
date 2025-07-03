@@ -128,4 +128,38 @@ export type Budget = z.infer<typeof BudgetSchema>;
 export type ModelConfig = z.infer<typeof ModelConfigSchema>;
 export type PathsConfig = z.infer<typeof PathsConfigSchema>;
 export type RemotionConfig = z.infer<typeof RemotionConfigSchema>;
-export type MotivaConfig = z.infer<typeof MotivaConfigSchema>; 
+export type MotivaConfig = z.infer<typeof MotivaConfigSchema>;
+
+// === Pipeline Management ===
+export * from './pipeline.js';
+
+// === Scene Graph & Editing ===
+
+export const SceneGraphSchema = z.object({
+  "@context": z.string().url(),
+  "@id": z.string(),
+  type: z.enum(["Scene", "Comp", "Footage", "Effect"]),
+  fps: z.number().int().positive(),
+  duration: z.number().int().positive(),
+  size: z.object({
+    w: z.number().int().positive(),
+    h: z.number().int().positive()
+  }),
+  layers: z.array(z.any()),
+  effects: z.array(z.any()).optional()
+});
+
+export const JsonPatchOperationSchema = z.object({
+  op: z.enum(["add", "remove", "replace", "move", "copy", "test"]),
+  path: z.string(),
+  value: z.any().optional(),
+  from: z.string().optional()
+});
+
+export const JsonPatchSchema = z.array(JsonPatchOperationSchema);
+
+// === Export Additional Types ===
+
+export type SceneGraph = z.infer<typeof SceneGraphSchema>;
+export type JsonPatchOperation = z.infer<typeof JsonPatchOperationSchema>;
+export type JsonPatch = z.infer<typeof JsonPatchSchema>; 

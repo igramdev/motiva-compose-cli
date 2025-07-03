@@ -1,11 +1,11 @@
 import { ConfigurationManager } from './config-manager.js';
-import { classifyError, MotivaError } from './error-classifier.js';
+import { ErrorClassifier, ErrorType } from './error-classifier.js';
 import chalk from 'chalk';
 
 export interface RetryOptions {
   maxAttempts?: number;
   backoffMs?: number;
-  onRetry?: (attempt: number, error: MotivaError, delayMs: number) => void;
+  onRetry?: (attempt: number, error: any, delayMs: number) => void;
 }
 
 /**
@@ -22,37 +22,37 @@ export async function withRetry<T>(
   const maxAttempts = options.maxAttempts ?? retryConfig.maxAttempts;
   const backoffMs = options.backoffMs ?? retryConfig.backoffMs;
   
-  let lastError: MotivaError;
+  let lastError: any;
   
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
     try {
       return await operation();
     } catch (error) {
-      const motivaError = classifyError(error);
-      lastError = motivaError;
+      const errorInfo = ErrorClassifier.classify(error);
+      lastError = error;
       
       // リトライ不可能なエラーの場合は即座にスロー
-      if (!motivaError.retriable) {
-        console.log(chalk.red(`❌ 致命的エラー (${motivaError.type}): ${motivaError.message}`));
+      if (!errorInfo.retryable) {
+        console.log(chalk.red(`❌ 致命的エラー (${errorInfo.type}): ${errorInfo.message}`));
         throw error;
       }
       
       // 最後の試行の場合はエラーをスロー
       if (attempt === maxAttempts) {
         console.log(chalk.red(`❌ 最大リトライ回数 (${maxAttempts}) に達しました`));
-        console.log(chalk.red(`最終エラー (${motivaError.type}): ${motivaError.message}`));
+        console.log(chalk.red(`最終エラー (${errorInfo.type}): ${errorInfo.message}`));
         throw error;
       }
       
       // 指数バックオフで待機
       const delayMs = backoffMs * Math.pow(2, attempt - 1);
       
-      console.log(chalk.yellow(`⚠️  リトライ ${attempt}/${maxAttempts} (${motivaError.type}): ${motivaError.message}`));
+      console.log(chalk.yellow(`⚠️  リトライ ${attempt}/${maxAttempts} (${errorInfo.type}): ${errorInfo.message}`));
       console.log(chalk.gray(`⏳ ${delayMs}ms 待機中...`));
       
       // カスタムリトライコールバック
       if (options.onRetry) {
-        options.onRetry(attempt, motivaError, delayMs);
+        options.onRetry(attempt, error, delayMs);
       }
       
       await new Promise(resolve => setTimeout(resolve, delayMs));
@@ -68,7 +68,7 @@ export async function withRetry<T>(
  */
 export async function withRetryForErrorTypes<T>(
   operation: () => Promise<T>,
-  retriableTypes: string[],
+  retriableTypes: ErrorType[],
   options: RetryOptions = {}
 ): Promise<T> {
   const configManager = ConfigurationManager.getInstance();
@@ -77,37 +77,37 @@ export async function withRetryForErrorTypes<T>(
   const maxAttempts = options.maxAttempts ?? retryConfig.maxAttempts;
   const backoffMs = options.backoffMs ?? retryConfig.backoffMs;
   
-  let lastError: MotivaError;
+  let lastError: any;
   
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
     try {
       return await operation();
     } catch (error) {
-      const motivaError = classifyError(error);
-      lastError = motivaError;
+      const errorInfo = ErrorClassifier.classify(error);
+      lastError = error;
       
       // 指定されたエラータイプでない場合は即座にスロー
-      if (!retriableTypes.includes(motivaError.type)) {
-        console.log(chalk.red(`❌ リトライ対象外エラー (${motivaError.type}): ${motivaError.message}`));
+      if (!retriableTypes.includes(errorInfo.type)) {
+        console.log(chalk.red(`❌ リトライ対象外エラー (${errorInfo.type}): ${errorInfo.message}`));
         throw error;
       }
       
       // 最後の試行の場合はエラーをスロー
       if (attempt === maxAttempts) {
         console.log(chalk.red(`❌ 最大リトライ回数 (${maxAttempts}) に達しました`));
-        console.log(chalk.red(`最終エラー (${motivaError.type}): ${motivaError.message}`));
+        console.log(chalk.red(`最終エラー (${errorInfo.type}): ${errorInfo.message}`));
         throw error;
       }
       
       // 指数バックオフで待機
       const delayMs = backoffMs * Math.pow(2, attempt - 1);
       
-      console.log(chalk.yellow(`⚠️  リトライ ${attempt}/${maxAttempts} (${motivaError.type}): ${motivaError.message}`));
+      console.log(chalk.yellow(`⚠️  リトライ ${attempt}/${maxAttempts} (${errorInfo.type}): ${errorInfo.message}`));
       console.log(chalk.gray(`⏳ ${delayMs}ms 待機中...`));
       
       // カスタムリトライコールバック
       if (options.onRetry) {
-        options.onRetry(attempt, motivaError, delayMs);
+        options.onRetry(attempt, error, delayMs);
       }
       
       await new Promise(resolve => setTimeout(resolve, delayMs));

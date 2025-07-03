@@ -1,0 +1,719 @@
+{
+  "concept-planner": {
+    "sceneId": "nature_beauty_shortfilm",
+    "duration": 30,
+    "theme": "自然の美しさ",
+    "shots": [
+      {
+        "id": "shot1",
+        "start": 0,
+        "len": 10,
+        "desc": "朝日が昇る山のシルエット。オレンジと紫の空が広がる。"
+      },
+      {
+        "id": "shot2",
+        "start": 10,
+        "len": 15,
+        "desc": "緑豊かな森の中、柔らかな風に揺れる葉。光が差し込む。"
+      },
+      {
+        "id": "shot3",
+        "start": 25,
+        "len": 15,
+        "desc": "静かな湖面に映る青空と木々。水面が波紋を描く。"
+      },
+      {
+        "id": "shot4",
+        "start": 40,
+        "len": 10,
+        "desc": "花畑のクローズアップ。色とりどりの花びらが揺れる。"
+      },
+      {
+        "id": "shot5",
+        "start": 50,
+        "len": 10,
+        "desc": "夕暮れ時の海辺、波が寄せては返す。オレンジ色に染まる空。"
+      },
+      {
+        "id": "shot6",
+        "start": 60,
+        "len": 10,
+        "desc": "星空のタイムラプス。星が流れ、夜の静寂を感じさせる。"
+      }
+    ],
+    "bgm": {
+      "style": "アンビエント",
+      "bpm": 60
+    }
+  },
+  "asset-synthesizer-audio": {
+    "sceneId": "nature_beauty_shortfilm",
+    "version": "1.0",
+    "assets": [
+      {
+        "id": "video_shot1",
+        "type": "video",
+        "uri": null,
+        "generator": "mock",
+        "spec": {
+          "description": "朝日が昇る山のシルエット。オレンジと紫の空が広がる。",
+          "duration": 10,
+          "dimensions": {
+            "width": 1920,
+            "height": 1080
+          },
+          "format": "mp4",
+          "style": "自然",
+          "quality": "standard"
+        },
+        "status": "pending",
+        "metadata": {
+          "shotId": "shot1",
+          "createdAt": null,
+          "estimatedCost": 0.5,
+          "actualCost": null
+        }
+      },
+      {
+        "id": "video_shot2",
+        "type": "video",
+        "uri": null,
+        "generator": "mock",
+        "spec": {
+          "description": "緑豊かな森の中、柔らかな風に揺れる葉。光が差し込む。",
+          "duration": 15,
+          "dimensions": {
+            "width": 1920,
+            "height": 1080
+          },
+          "format": "mp4",
+          "style": "自然",
+          "quality": "standard"
+        },
+        "status": "pending",
+        "metadata": {
+          "shotId": "shot2",
+          "createdAt": null,
+          "estimatedCost": 0.75,
+          "actualCost": null
+        }
+      },
+      {
+        "id": "video_shot3",
+        "type": "video",
+        "uri": null,
+        "generator": "mock",
+        "spec": {
+          "description": "静かな湖面に映る青空と木々。水面が波紋を描く。",
+          "duration": 15,
+          "dimensions": {
+            "width": 1920,
+            "height": 1080
+          },
+          "format": "mp4",
+          "style": "自然",
+          "quality": "standard"
+        },
+        "status": "pending",
+        "metadata": {
+          "shotId": "shot3",
+          "createdAt": null,
+          "estimatedCost": 0.75,
+          "actualCost": null
+        }
+      },
+      {
+        "id": "video_shot4",
+        "type": "video",
+        "uri": null,
+        "generator": "mock",
+        "spec": {
+          "description": "花畑のクローズアップ。色とりどりの花びらが揺れる。",
+          "duration": 10,
+          "dimensions": {
+            "width": 1920,
+            "height": 1080
+          },
+          "format": "mp4",
+          "style": "自然",
+          "quality": "standard"
+        },
+        "status": "pending",
+        "metadata": {
+          "shotId": "shot4",
+          "createdAt": null,
+          "estimatedCost": 0.5,
+          "actualCost": null
+        }
+      },
+      {
+        "id": "video_shot5",
+        "type": "video",
+        "uri": null,
+        "generator": "mock",
+        "spec": {
+          "description": "夕暮れ時の海辺、波が寄せては返す。オレンジ色に染まる空。",
+          "duration": 10,
+          "dimensions": {
+            "width": 1920,
+            "height": 1080
+          },
+          "format": "mp4",
+          "style": "自然",
+          "quality": "standard"
+        },
+        "status": "pending",
+        "metadata": {
+          "shotId": "shot5",
+          "createdAt": null,
+          "estimatedCost": 0.5,
+          "actualCost": null
+        }
+      },
+      {
+        "id": "video_shot6",
+        "type": "video",
+        "uri": null,
+        "generator": "mock",
+        "spec": {
+          "description": "星空のタイムラプス。星が流れ、夜の静寂を感じさせる。",
+          "duration": 10,
+          "dimensions": {
+            "width": 1920,
+            "height": 1080
+          },
+          "format": "mp4",
+          "style": "自然",
+          "quality": "standard"
+        },
+        "status": "pending",
+        "metadata": {
+          "shotId": "shot6",
+          "createdAt": null,
+          "estimatedCost": 0.5,
+          "actualCost": null
+        }
+      },
+      {
+        "id": "audio_bgm_main",
+        "type": "audio",
+        "uri": null,
+        "generator": "mock",
+        "spec": {
+          "description": "アンビエントスタイルのBGM、テーマに合わせたリラクゼーション音楽。",
+          "duration": 30,
+          "dimensions": null,
+          "format": "wav",
+          "style": "アンビエント",
+          "quality": "standard"
+        },
+        "status": "pending",
+        "metadata": {
+          "shotId": null,
+          "createdAt": null,
+          "estimatedCost": 0.3,
+          "actualCost": null
+        }
+      }
+    ],
+    "generators": {
+      "mock": {
+        "name": "Mock Generator",
+        "type": "mock",
+        "config": {}
+      }
+    },
+    "totalEstimatedCost": 4.5
+  },
+  "asset-synthesizer-video": {
+    "sceneId": "nature_beauty_shortfilm",
+    "version": "1.0",
+    "assets": [
+      {
+        "id": "video_shot1",
+        "type": "video",
+        "uri": null,
+        "generator": "mock",
+        "spec": {
+          "description": "朝日が昇る山のシルエット。オレンジと紫の空が広がる。",
+          "duration": 10,
+          "dimensions": {
+            "width": 1920,
+            "height": 1080
+          },
+          "format": "mp4",
+          "style": "自然の美しさ",
+          "quality": "standard"
+        },
+        "status": "pending",
+        "metadata": {
+          "shotId": "shot1",
+          "createdAt": null,
+          "estimatedCost": 0.3,
+          "actualCost": null
+        }
+      },
+      {
+        "id": "video_shot2",
+        "type": "video",
+        "uri": null,
+        "generator": "mock",
+        "spec": {
+          "description": "緑豊かな森の中、柔らかな風に揺れる葉。光が差し込む。",
+          "duration": 15,
+          "dimensions": {
+            "width": 1920,
+            "height": 1080
+          },
+          "format": "mp4",
+          "style": "自然の美しさ",
+          "quality": "standard"
+        },
+        "status": "pending",
+        "metadata": {
+          "shotId": "shot2",
+          "createdAt": null,
+          "estimatedCost": 0.45,
+          "actualCost": null
+        }
+      },
+      {
+        "id": "video_shot3",
+        "type": "video",
+        "uri": null,
+        "generator": "mock",
+        "spec": {
+          "description": "静かな湖面に映る青空と木々。水面が波紋を描く。",
+          "duration": 15,
+          "dimensions": {
+            "width": 1920,
+            "height": 1080
+          },
+          "format": "mp4",
+          "style": "自然の美しさ",
+          "quality": "standard"
+        },
+        "status": "pending",
+        "metadata": {
+          "shotId": "shot3",
+          "createdAt": null,
+          "estimatedCost": 0.45,
+          "actualCost": null
+        }
+      },
+      {
+        "id": "video_shot4",
+        "type": "video",
+        "uri": null,
+        "generator": "mock",
+        "spec": {
+          "description": "花畑のクローズアップ。色とりどりの花びらが揺れる。",
+          "duration": 10,
+          "dimensions": {
+            "width": 1920,
+            "height": 1080
+          },
+          "format": "mp4",
+          "style": "自然の美しさ",
+          "quality": "standard"
+        },
+        "status": "pending",
+        "metadata": {
+          "shotId": "shot4",
+          "createdAt": null,
+          "estimatedCost": 0.3,
+          "actualCost": null
+        }
+      },
+      {
+        "id": "video_shot5",
+        "type": "video",
+        "uri": null,
+        "generator": "mock",
+        "spec": {
+          "description": "夕暮れ時の海辺、波が寄せては返す。オレンジ色に染まる空。",
+          "duration": 10,
+          "dimensions": {
+            "width": 1920,
+            "height": 1080
+          },
+          "format": "mp4",
+          "style": "自然の美しさ",
+          "quality": "standard"
+        },
+        "status": "pending",
+        "metadata": {
+          "shotId": "shot5",
+          "createdAt": null,
+          "estimatedCost": 0.3,
+          "actualCost": null
+        }
+      },
+      {
+        "id": "video_shot6",
+        "type": "video",
+        "uri": null,
+        "generator": "mock",
+        "spec": {
+          "description": "星空のタイムラプス。星が流れ、夜の静寂を感じさせる。",
+          "duration": 10,
+          "dimensions": {
+            "width": 1920,
+            "height": 1080
+          },
+          "format": "mp4",
+          "style": "自然の美しさ",
+          "quality": "standard"
+        },
+        "status": "pending",
+        "metadata": {
+          "shotId": "shot6",
+          "createdAt": null,
+          "estimatedCost": 0.3,
+          "actualCost": null
+        }
+      },
+      {
+        "id": "bgm_main",
+        "type": "audio",
+        "uri": null,
+        "generator": "mock",
+        "spec": {
+          "description": "アンビエントスタイルのBGM。60 BPMで自然の美しさを表現。",
+          "duration": 30,
+          "dimensions": null,
+          "format": "wav",
+          "style": "アンビエント",
+          "quality": "standard"
+        },
+        "status": "pending",
+        "metadata": {
+          "shotId": null,
+          "createdAt": null,
+          "estimatedCost": 0.3,
+          "actualCost": null
+        }
+      }
+    ],
+    "generators": {
+      "mock": {
+        "name": "Mock Generator",
+        "type": "mock",
+        "config": {}
+      }
+    },
+    "totalEstimatedCost": 2.55
+  },
+  "asset-synthesizer-effects": {
+    "sceneId": "nature_beauty_shortfilm",
+    "version": "1.0",
+    "assets": [
+      {
+        "id": "video_shot1",
+        "type": "video",
+        "uri": null,
+        "generator": "mock",
+        "spec": {
+          "description": "朝日が昇る山のシルエット。オレンジと紫の空が広がる。",
+          "duration": 10,
+          "dimensions": {
+            "width": 1920,
+            "height": 1080
+          },
+          "format": "mp4",
+          "style": "自然風景",
+          "quality": "standard"
+        },
+        "status": "pending",
+        "metadata": {
+          "shotId": "shot1",
+          "createdAt": null,
+          "estimatedCost": 0.5,
+          "actualCost": null
+        }
+      },
+      {
+        "id": "video_shot2",
+        "type": "video",
+        "uri": null,
+        "generator": "mock",
+        "spec": {
+          "description": "緑豊かな森の中、柔らかな風に揺れる葉。光が差し込む。",
+          "duration": 15,
+          "dimensions": {
+            "width": 1920,
+            "height": 1080
+          },
+          "format": "mp4",
+          "style": "自然風景",
+          "quality": "standard"
+        },
+        "status": "pending",
+        "metadata": {
+          "shotId": "shot2",
+          "createdAt": null,
+          "estimatedCost": 0.75,
+          "actualCost": null
+        }
+      },
+      {
+        "id": "video_shot3",
+        "type": "video",
+        "uri": null,
+        "generator": "mock",
+        "spec": {
+          "description": "静かな湖面に映る青空と木々。水面が波紋を描く。",
+          "duration": 15,
+          "dimensions": {
+            "width": 1920,
+            "height": 1080
+          },
+          "format": "mp4",
+          "style": "自然風景",
+          "quality": "standard"
+        },
+        "status": "pending",
+        "metadata": {
+          "shotId": "shot3",
+          "createdAt": null,
+          "estimatedCost": 0.75,
+          "actualCost": null
+        }
+      },
+      {
+        "id": "video_shot4",
+        "type": "video",
+        "uri": null,
+        "generator": "mock",
+        "spec": {
+          "description": "花畑のクローズアップ。色とりどりの花びらが揺れる。",
+          "duration": 10,
+          "dimensions": {
+            "width": 1920,
+            "height": 1080
+          },
+          "format": "mp4",
+          "style": "自然風景",
+          "quality": "standard"
+        },
+        "status": "pending",
+        "metadata": {
+          "shotId": "shot4",
+          "createdAt": null,
+          "estimatedCost": 0.5,
+          "actualCost": null
+        }
+      },
+      {
+        "id": "video_shot5",
+        "type": "video",
+        "uri": null,
+        "generator": "mock",
+        "spec": {
+          "description": "夕暮れ時の海辺、波が寄せては返す。オレンジ色に染まる空。",
+          "duration": 10,
+          "dimensions": {
+            "width": 1920,
+            "height": 1080
+          },
+          "format": "mp4",
+          "style": "自然風景",
+          "quality": "standard"
+        },
+        "status": "pending",
+        "metadata": {
+          "shotId": "shot5",
+          "createdAt": null,
+          "estimatedCost": 0.5,
+          "actualCost": null
+        }
+      },
+      {
+        "id": "video_shot6",
+        "type": "video",
+        "uri": null,
+        "generator": "mock",
+        "spec": {
+          "description": "星空のタイムラプス。星が流れ、夜の静寂を感じさせる。",
+          "duration": 10,
+          "dimensions": {
+            "width": 1920,
+            "height": 1080
+          },
+          "format": "mp4",
+          "style": "自然風景",
+          "quality": "standard"
+        },
+        "status": "pending",
+        "metadata": {
+          "shotId": "shot6",
+          "createdAt": null,
+          "estimatedCost": 0.5,
+          "actualCost": null
+        }
+      },
+      {
+        "id": "bgm_main",
+        "type": "audio",
+        "uri": null,
+        "generator": "mock",
+        "spec": {
+          "description": "アンビエント音楽、自然の美しさを引き立てる。",
+          "duration": 30,
+          "dimensions": null,
+          "format": "wav",
+          "style": "アンビエント",
+          "quality": "standard"
+        },
+        "status": "pending",
+        "metadata": {
+          "shotId": null,
+          "createdAt": null,
+          "estimatedCost": 0.3,
+          "actualCost": null
+        }
+      }
+    ],
+    "generators": {
+      "mock": {
+        "name": "Mock Generator",
+        "type": "mock",
+        "config": {}
+      }
+    },
+    "totalEstimatedCost": 4.3
+  },
+  "director": {
+    "sceneId": "nature_beauty_shortfilm",
+    "version": "1.0",
+    "composition": {
+      "title": "自然の美しさ",
+      "description": "自然の美しさをテーマにした短編映像。朝日、森、湖、花、海、星空を通して、自然の魅力を伝える。",
+      "duration": 60,
+      "fps": 30,
+      "resolution": {
+        "width": 1920,
+        "height": 1080
+      },
+      "timeline": [
+        {
+          "id": "video_shot1",
+          "start": 0,
+          "end": 10,
+          "assetId": "video_shot1",
+          "assetType": "video",
+          "transform": null,
+          "effects": null
+        },
+        {
+          "id": "video_shot2",
+          "start": 10,
+          "end": 25,
+          "assetId": "video_shot2",
+          "assetType": "video",
+          "transform": null,
+          "effects": null
+        },
+        {
+          "id": "video_shot3",
+          "start": 25,
+          "end": 40,
+          "assetId": "video_shot3",
+          "assetType": "video",
+          "transform": null,
+          "effects": null
+        },
+        {
+          "id": "video_shot4",
+          "start": 40,
+          "end": 50,
+          "assetId": "video_shot4",
+          "assetType": "video",
+          "transform": null,
+          "effects": null
+        },
+        {
+          "id": "video_shot5",
+          "start": 50,
+          "end": 60,
+          "assetId": "video_shot5",
+          "assetType": "video",
+          "transform": null,
+          "effects": null
+        },
+        {
+          "id": "video_shot6",
+          "start": 60,
+          "end": 70,
+          "assetId": "video_shot6",
+          "assetType": "video",
+          "transform": null,
+          "effects": null
+        }
+      ],
+      "audio": {
+        "bgm": {
+          "assetId": "bgm_main",
+          "volume": 0.5,
+          "fadeIn": 5,
+          "fadeOut": 5
+        },
+        "sfx": null
+      },
+      "transitions": [
+        {
+          "id": "transition1",
+          "type": "fade",
+          "duration": 1,
+          "fromShot": "video_shot1",
+          "toShot": "video_shot2",
+          "params": null
+        },
+        {
+          "id": "transition2",
+          "type": "fade",
+          "duration": 1,
+          "fromShot": "video_shot2",
+          "toShot": "video_shot3",
+          "params": null
+        },
+        {
+          "id": "transition3",
+          "type": "fade",
+          "duration": 1,
+          "fromShot": "video_shot3",
+          "toShot": "video_shot4",
+          "params": null
+        },
+        {
+          "id": "transition4",
+          "type": "fade",
+          "duration": 1,
+          "fromShot": "video_shot4",
+          "toShot": "video_shot5",
+          "params": null
+        },
+        {
+          "id": "transition5",
+          "type": "fade",
+          "duration": 1,
+          "fromShot": "video_shot5",
+          "toShot": "video_shot6",
+          "params": null
+        }
+      ]
+    },
+    "metadata": {
+      "createdAt": "2023-10-31T12:00:00Z",
+      "totalCost": 4.3,
+      "estimatedRenderTime": 120,
+      "quality": "standard",
+      "tags": [
+        "自然",
+        "短編",
+        "美しさ",
+        "風景"
+      ]
+    }
+  }
+}

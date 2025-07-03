@@ -23,13 +23,13 @@ export class AssetSynthesizerAgent extends BaseAgent<ShotPlan, AssetManifest> {
   }
 
   async run(shotPlan: ShotPlan): Promise<AssetManifest> {
-    // 設定を取得
+    // 設定を取得（キャッシュを活用）
     const config = await this.configManager.getAgentConfig('assetSynthesizer');
     
     return await this.synthesizer.generateManifest(shotPlan, {
-      model: config.provider.replace('openai:', ''),
-      temperature: config.temperature,
-      maxTokens: config.maxTokens
+      model: config.provider?.replace('openai:', '') || 'gpt-4o-mini',
+      temperature: config.temperature || 0.5,
+      maxTokens: config.maxTokens || 6144
     });
   }
 } 
