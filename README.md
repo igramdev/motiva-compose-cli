@@ -39,10 +39,10 @@ packages/
 
 # イベントシステム概要
 ```mermaid
-graph TD;
-  "start" -->|"start"| "concept-planner";
-  "concept-planner" -->|"plan"| "asset-synthesizer";
-  "asset-synthesizer" -->|"compose"| "director";
-  "director" -->|"validate"| "critic";
-  "critic" -->|"report"| "end";
+graph TD
+  Start([start]) -->|start| CP["concept-planner"]
+  CP -->|plan| AS["asset-synthesizer"]
+  AS -->|compose| DR["director"]
+  DR -->|validate| CR["critic"]
+  CR -->|report| End([end])
 ``` 
